@@ -1,8 +1,8 @@
 %Demo1
 function demo1()
-    close;
+    close all;
     clc;
-    clear;
+    clear all;
     path = '../SampleData/';
     filenames = textread([path 'fileinfo.txt'],'%s');
 
@@ -30,16 +30,16 @@ function demo1()
         imshow( img(:,:,i) );
     end
     
-    figure(4);
-    show_hist_feature( img );
-    
-    figure(5);
-    res = hist_feature_1(img);
-    bar(res);
-    
-    figure(6);
-    res = hist_feature_2(img, 8);
-    bar(res);
+%     figure(4);
+%     show_hist_feature( img );
+%     
+%     figure(5);
+%     res = hist_feature_1(img);
+%     bar(res);
+%     
+%     figure(6);
+%     res = hist_feature_2(img, 8);
+%     bar(res);
     
     figure(7);
     res = hist_feature_3(img);
@@ -95,7 +95,16 @@ function ret = hist_feature_3(image)
         sigma(i) = ( sum(sum( ( double( image(:,:,i) ) - mu(i) ).^2 ))/(A*B) )^(1/2);
     end
     for i=1:D
-        s(i) = ( sum(sum( abs( double( image(:,:,i) ) - mu(i) ).^3 ) )/(A*B) )^(1/3);
+        s(i) = sum(sum( ( double( image(:,:,i) ) - mu(i) ).^3 ) )/(A*B);
+        lable = 1;
+        if ( s(i)<0 ) 
+            lable = -1;
+        end
+        s(i) = abs( s(i) )^(1/3) * lable;
     end
     ret = [ mu, sigma, s ];
+    
+    disp( mu(5) );
+    disp( sigma(5) );
+    disp( s(5) );
 end
