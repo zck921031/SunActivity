@@ -104,7 +104,5 @@ function ret = hist_feature_3(image)
     end
     ret = [ mu, sigma, s ];
     
-    disp( mu(5) );
-    disp( sigma(5) );
-    disp( s(5) );
+    disp( ret );
 end
