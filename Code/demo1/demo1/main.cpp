@@ -6,12 +6,16 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "feature.h"
+#include "nca.h"
 
 using namespace cv;
 using namespace std;
 
 int main()
 {
+	wine_demo();
+	return 0;
+
 	// 读入一张图片
 	Mat img = read_jpg_to_gray_mat("C://Users//zck//Documents//GitHub//SunActivity//Image Annotation//SampleData//latest_512_0094.jpg");	
 
@@ -28,3 +32,4 @@ int main()
 	// 等待按键后窗口自动关闭
 	waitKey(0);
 }
+
