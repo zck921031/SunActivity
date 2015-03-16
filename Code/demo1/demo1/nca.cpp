@@ -68,21 +68,41 @@ namespace nca_debug{
 		if ( F!=F ) F = -1;
 		return F;
 	}
-	double test(const matrix2d&x, const vector<int>&label, const matrix2d&A){		
-		int N = x.size();
-		vector<double> s(N,0);
-		int right = 0;
+	int classify_1(const matrix2d&train_x, const vector<int>&train_label, const vector<double>&x, const matrix2d&A){
+		int N = train_x.size();
+		vector<double> score(N,0);
 		for (int i=0; i<N; i++){
-			vector<double> score(N,0);
-			double fm = 0;
-			for (int j=0; j<N; j++){
-				s[j] = exp( -distance2(x[i], x[j], A) );
-				score[ label[j] ] += s[j];
-			}
-			int c = max_element( score.begin(), score.end() ) - score.begin();
-			if ( c == label[i] ) right++;
+			score[ train_label[i] ] += exp( -distance2(x, train_x[i], A) );
 		}
-		return (double)right/N;
+		return max_element( score.begin(), score.end() ) - score.begin();
+	}	
+	int classify_knn(const matrix2d&train_x, const vector<int>&train_label, const vector<double>&x, const matrix2d&A){
+		int N = train_x.size();
+		vector< pair<double,int> > dist(N);
+		for (int i=0; i<N; i++){
+			dist[i].first = distance2(x, train_x[i], A);
+			dist[i].second = train_label[i];
+		}
+		sort( begin(dist), end(dist) );		
+		int K = 3;
+		map<int,int> mp;
+		int ret = -1, best = -1;
+		for (int i=0; i<K; i++){
+			int cnt = ++mp[ dist[i].second ];
+			if ( cnt>best ){
+				best = cnt;
+				ret = dist[i].second;
+			}
+		}
+		return ret;
+	}
+	double test(const matrix2d&train_x, const vector<int>&train_label,const matrix2d&test_x, const vector<int>&test_label, const matrix2d&A){
+		int right = 0;
+		int M = test_x.size();
+		for (int i=0; i<M; i++){
+			if ( classify_knn(train_x, train_label, test_x[i], A ) == test_label[i] ) right++;
+		}
+		return (double)right/M;
 	}
 }
 using namespace nca_debug;
@@ -117,14 +137,12 @@ matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, d
 				}
 			}
 			//cout<<i<<" : "<<fm<<endl;
-		}
-	
+		}	
 	//	for (int i=0; i<N; i++){
 	//		cout<<"P["<<i<<"] = "<<P[i]<<" label: "<<label[i]<<endl;
-	//	}
-	
-		cout<<"F: "<<F<<endl;	//checked!
-		cout<<"test: "<<test(x, label, A)<<endl;
+	//	}	
+		cout<<"F: "<<F<<" ";	//checked!
+		cout<<"test: "<<test(x, label, x, label, A)<<endl;
 		
 		//求出导数
 		matrix2d G = matrix2d(d, vector<double>(D,0) );
@@ -146,29 +164,25 @@ matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, d
 				}
 			}
 		}
-		multiby(G, 2, A);
-		/*
-		for (int i=0; i<d; i++){
-			for (int j=0; j<d; j++){
-				cout<<G[i][j]<<" ";
-			}
-			cout<<endl;
-		}
-		*/
-
+		multiby(G, 2, A);		
+//		for (int i=0; i<d; i++){
+//			for (int j=0; j<d; j++){
+//				cout<<G[i][j]<<" ";
+//			}
+//			cout<<endl;
+//		}
 		matrix2d A_tmp=A, A_best=A;
 		double F_best = 0;
-		/*
-		while ( (F_tmp=get_F(x, label, A_tmp)<0) ){
-			for (int i=0; i<d; i++){
-				for (int j=0; j<D; j++){ 
-					A_tmp[i][j] *= 0.8;
-				}				
-			}
-			cout<<"F_tmp: "<<F_tmp<<" .. ";
-		}
-		*/
-		
+		//避免出现数值运算问题
+//		while ( (F_tmp=get_F(x, label, A_tmp)<0) ){
+//			for (int i=0; i<d; i++){
+//				for (int j=0; j<D; j++){ 
+//					A_tmp[i][j] *= 0.8;
+//				}
+//			}
+//			cout<<"F_tmp: "<<F_tmp<<" .. ";
+//		}
+				
 		for ( double step = 1; step > 1e-8; step *= 0.5 ){			
 			for (int i=0; i<d; i++){
 				for (int j=0; j<D; j++){
@@ -180,13 +194,13 @@ matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, d
 				F_best = F_tmp;
 				A_best = A_tmp;
 			}
-		}				
+		}
 
 		if ( F_best > F ){
 			A = A_best;
 			F = F_best;
-			cout<<"F_new: "<<F<<endl;		
-			cout<<"test: "<<test(x, label, A)<<endl;
+			cout<<"F_new: "<<F<<" ";		
+			cout<<"test: "<<test(x, label, x, label, A)<<endl;
 		}else{
 			break;
 		}
@@ -195,10 +209,11 @@ matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, d
 }
 
 void wine_demo(){
+	//read train data
 	FILE *fin = fopen("..//..//..//data//wine//wine_train.data","r");
 	if ( fin == NULL ) return ;
-	matrix2d x;
-	vector<int> label;
+	matrix2d train_x;
+	vector<int> train_label;
 	int c;
 	int D = 13;
 	while ( fscanf(fin, "%d", &c) != EOF ){
@@ -206,17 +221,31 @@ void wine_demo(){
 		for (int i=0; i<D; i++){
 			fscanf(fin, ",%lf", &elem[i]);
 		}
-		label.push_back(c);
-		x.push_back(elem);
+		train_label.push_back(c);
+		train_x.push_back(elem);
 	}
 	fclose(fin);
+	//read test data
+	fin = fopen("..//..//..//data//wine//wine_test.data","r");
+	if ( fin == NULL ) return ;
+	matrix2d test_x;
+	vector<int> test_label;
+	while ( fscanf(fin, "%d", &c) != EOF ){
+		vector<double> elem(D);
+		for (int i=0; i<D; i++){
+			fscanf(fin, ",%lf", &elem[i]);
+		}
+		test_label.push_back(c);
+		test_x.push_back(elem);
+	}
+	fclose(fin);
+	//run testing using Euclidean
+	matrix2d A = matrix2d(D, vector<double>(D,0));
+	for (int i=0; i<D; i++) A[i][i] = 1;
+	cout<<"before dml, test is: "<<test(train_x, train_label, test_x, test_label, A)<<endl;
+	//distance metric learning
+	A = nca_solve(train_x, train_label, D, 30, 1);	
+	//run testing using A
+	cout<<"after dml, test is: "<<test(train_x, train_label, test_x, test_label, A)<<endl;
 
-//	for (int i=0; i<(int)x.size(); i++){
-//		for ( auto t:x[i] ){
-//			cout<<t<<" ";
-//		}
-//		cout<<endl;
-//	}
-
-	nca_solve(x, label, D, 30, 1);
 }

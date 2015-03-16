@@ -24,12 +24,21 @@
     <ClCompile Include="nca.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="traindata.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="feature.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="nca.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="dirent.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="traindata.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

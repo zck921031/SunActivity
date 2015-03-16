@@ -1,5 +1,6 @@
 #include<bits/stdc++.h>
 int main(){
+    srand( unsigned(time(NULL)) );
     FILE *fin, *ftrain, *ftest, *fout;
     fin = fopen("wine.data", "r");
     ftrain = fopen("wine_train.data", "w");
@@ -8,7 +9,8 @@ int main(){
     char str[10240];
     while( fgets(str, 10240, fin) ){
         ++cnt;
-        if ( cnt%5 != 0 ) fout = ftrain;
+        int ch = rand()%5;
+        if ( ch%5 != 0 ) fout = ftrain;
         else fout = ftest;
         fputs(str, fout);
     }
