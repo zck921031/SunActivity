@@ -41,5 +41,8 @@
     <ClInclude Include="traindata.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="demo1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

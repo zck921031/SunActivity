@@ -1,16 +1,6 @@
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define  _CRT_SECURE_NO_WARNINGS
-#endif
+#pragma once
 
-#include<iostream>
-#include<sstream>
-#include<cmath>
-#include<vector>
-#include<cassert>
-#include<set>
-#include<map>
-#include<algorithm>
-using namespace std;
+#include"demo1.h"
 
 #define matrix2d vector< vector<double> >
 

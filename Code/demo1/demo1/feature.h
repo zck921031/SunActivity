@@ -1,10 +1,6 @@
-#include<iostream>
-#include<vector>
-#include<cv.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-using namespace cv;
-using namespace std;
+#pragma once
+
+#include"demo1.h"
 
 vector< vector<uchar> > read_jpg_to_vector(const char* filename);
 //读取图片并转化为灰度图
