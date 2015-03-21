@@ -60,7 +60,7 @@ vector< map<string,string> > get_annotation_from_xml(string path){
 }
 
 
-void SunPic::read(){
+void SunPic::read_data(){
 	string filename;
 	int N = end(freqs) - begin(freqs);
 	for (int i=0; i<N; i++){
@@ -122,4 +122,34 @@ void Traindata::read_annotation(){
 		//{t.print();return ;}
 		annos.push_back(t);
 	}
+}
+void Traindata::read_annotation_from_lmsal_xml(string path){	
+	vector<string> filenames = list_file(path, "xml");
+	cout<<filenames.size()<<endl;
+	int iter = filenames.size();
+	for (auto filename : filenames){
+		if ( iter-- <= 0 ) break;
+		vector< map<string,string> > res;
+		process_xml(filename, res);
+		for (auto lmsal_anno:res){
+			Anno t;
+			if ( t.set(lmsal_anno) ){
+				annos.push_back(t);
+			}
+		}
+		cout<<iter<<endl;
+	}
+	sort( annos.begin(), annos.end() );
+	cout<<annos.size()<<endl;
+	annos.erase(unique( annos.begin(), annos.end() ), annos.end() );	
+	cout<<annos.size()<<endl;
+	/*
+	for (Anno t : annos){
+		if ( t.concept.find("Flare") != String::npos ){
+			t.print();
+			char s[1024];
+			gets(s);
+		}
+	}
+	*/
 }

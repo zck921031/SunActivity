@@ -14,7 +14,9 @@ int main()
 	//vector< map<string,string> > anno = get_annotation_from_xml("..//..//..//data//regional annotation//data//");
 	//show_active_regional();
 	Traindata traindata_test;
-	traindata_test.read_annotation();
+	//traindata_test.read_annotation_from_lmsal_xml("..//..//..//data//regional annotation//data//");
+	//traindata_test.save_xml_to_txt("lmsal.txt");
+	traindata_test.read_annotation_from_txt("lmsal.txt");
 	traindata_test.test();
 
 	//show_flare_example();

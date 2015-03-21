@@ -79,7 +79,7 @@ public class Downloader {
 		//System.out.println("The Time is:"+format.format(cal.getTime()) );
 		
 		Downloader downloader = new Downloader(); 
-		for (int i=0; i<8; i++){
+		for (int i=0; i<800; i++){
 			String start_time = format.format(cal.getTime()).toString();
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 			String end_time = format.format(cal.getTime()).toString();
