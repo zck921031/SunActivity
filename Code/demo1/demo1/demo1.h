@@ -15,10 +15,12 @@
 #include<set>
 #include<map>
 #include<iostream>
+#include<fstream>
 #include<algorithm>
 #include<cassert>
 #include<sstream>
 #include<ctime>
+#include<thread>
 #include<cv.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>

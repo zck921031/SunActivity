@@ -24,8 +24,59 @@ public:
 		for (auto &c:name){ if ( c==':' ) c='_'; }
 		read_data();
 	}
-	void read_data();
-	int show(double left=-1000, double right=1000, double up=1000, double down=-1000);
+
+	void read_data(){
+		string filename;
+		int N = end(_TRAINDATA::freqs) - begin(_TRAINDATA::freqs);
+		for (int i=0; i<N; i++){
+			string freq=_TRAINDATA::freqs[i], sec=_TRAINDATA::secs[i];
+			filename = _TRAINDATA::picture_path+string("//")+freq+"//"+string("aia.lev1.")+freq+"A_"+name+"_"+sec+".jpg";
+			//cout<<filename<<endl;
+			Mat img=imread(filename);
+			if (!img.data){
+				success = 0;
+				cerr<<"can't find file: "+filename<<endl;
+				return ;
+			}
+			Mat res;
+			cvtColor(img, res, CV_BGR2GRAY);
+			src.push_back(img);
+			gray.push_back(res);
+		}
+		success = 1;
+	}
+
+	int show(double left=-1000, double right=1000, double up=1000, double down=-1000){
+		if (!success) return -1;	
+		//注意lmsal的坐标和opencv的坐标是不一样的，我们的数据和lsmal的数据是上下颠倒的，要转换一下。
+		int L=(int)(left/0.6 + src[0].cols/2), R=(int)(right/0.6 + src[0].cols/2),
+			U=(int)(up/0.6 + src[0].rows/2), D=(int)(down/0.6 + src[0].rows/2);
+		if (L<0 || L>=src[0].cols || R<0 || R>=src[0].cols || U<0 || U>=src[0].rows || D<0 || D>=src[0].rows) return -1;
+	//	//画坐标系，调试用
+	//	for (int k=-4; k<=4; k++){
+	//		for (int l=-5; l<=5; l++){
+	//			for (int i=0; i<src.rows; i++){
+	//				Vec3b color = Vec3b(0,0,0);
+	//				if (k==0) color = Vec3b(255,255,255);
+	//				src.at<Vec3b>(i, 2048+416*k+l) = color;
+	//				src.at<Vec3b>(2048+416*k+l, i) = color;
+	//			}
+	//		}
+	//		//cout<<2048+300*k<<endl;
+	//	}
+		while(1){
+			for (const Mat &elem: src){
+				Mat t(elem, Rect(L, D, R-L, U-D) );
+				Mat dst;
+				double scale = min( 1000.0/t.cols, 600.0/t.rows );
+				resize(t, dst, Size( (int)(scale*t.cols), (int)(scale*t.rows) ) );
+				namedWindow("1");
+				imshow("1", dst);
+				int key = waitKey(0);
+				if ( 0x20 != key ) return key;
+			}
+		}
+	}
 };
 
 
@@ -138,10 +189,11 @@ public:
 						auto res = get_ColorMoment_from_mat(s);
 						for_each(begin(res), end(res), [&feat](double x){feat.push_back(x);} );
 						res = get_texture_from_mat(s);
-						for (int i=0; i<4; i++){
-							feat.push_back(res[i]);
+						for (int j=0; j<4; j++){
+							feat.push_back(res[j]);
 						}
 
+						/*
 						int n = s.rows, m = s.cols;
 						double sum = 0, weight = 0;
 						for (int u=0; u<n; u++){
@@ -153,6 +205,7 @@ public:
 						}
 						sum /= weight;
 						cout<<" sum["<<i<<"]"<<" = "<<sum<<endl;
+						*/
 					}
 					anno.print();
 				
@@ -190,3 +243,4 @@ public:
 		cout<<"read annotation from txt, finished."<<endl;
 	}
 };
+

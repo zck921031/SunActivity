@@ -93,6 +93,7 @@
     <ClInclude Include="feature.h" />
     <ClInclude Include="nca.h" />
     <ClInclude Include="traindata.h" />
+    <ClInclude Include="traindata_nasa.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -11,7 +11,9 @@ import java.util.regex.*;
 
 import com.Httpcom;
 
+
 public class ImgDownloader {
+	static String imgpath = "img/";
 	static TreeSet<String> imgnames = new TreeSet<String>();  
 
 	
@@ -130,6 +132,35 @@ public class ImgDownloader {
 		System.out.println( imgnames.size() );
 	}
 	
+	
+	ArrayList<SunFrame> genSunFrames(){		
+		ArrayList<String> names = new ArrayList<String>();
+		for (String t : imgnames){
+			String strs[] = t.split("[_,.]");
+			if ( strs.length != 5 ) continue;
+			if ( strs[3].compareTo("4500") == 0 ) continue;
+			names.add(t);
+		}
+		
+		ArrayList<SunFrame> sunFrames = new ArrayList<SunFrame>(); 
+		int len = names.size();
+		for ( int i=0; i<len; i++ ){
+			int cnt = 0, j = i;
+			SunFrame sunFrame = new SunFrame(); 
+			while( cnt<9 && j<len ){
+				String t = names.get(j);
+				sunFrame.add(t);
+				cnt++;	j++;
+			}
+			if ( sunFrame.check() ){
+				sunFrames.add( sunFrame );
+				i = i+8;
+			}
+		}
+		System.out.println( "imgnames size: " + names.size() );
+		System.out.println( "sunFrames size: " + sunFrames.size() );
+		return sunFrames;
+	}
 	ArrayList<SunFrame> get_need_img(int N){
 		ArrayList<SunFrame> ret = new ArrayList<SunFrame>();
 		try
@@ -152,11 +183,19 @@ public class ImgDownloader {
 			SimpleDateFormat lmsalformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Calendar cal = Calendar.getInstance();		
 			for ( Anno t : annos ){
-				if ( t.concept.compareTo("Flare") != 0 ) continue;
-				if ( t.event_starttime.compareTo("2012-01-01T00:00:00") > 0 ) continue;
-				if ( t.area > 3e5 ) continue;
-				if ( t.area < 1e4 ) continue;
-				//t.print();
+				if ( t.concept.compareTo("Coronal Hole") != 0 ) continue;
+				if ( t.event_endtime.compareTo("2013-01-01T00:00:00") > 0 ) continue;
+				//flare area
+				//if ( t.area > 3e5 || t.area < 5e4 ) continue;
+				//Sunspot area
+				//if ( t.area > 3e5 || t.area < 5e3 ) continue;
+				//Coronal Hole area
+				if ( t.area > 3e5 || t.area < 1e5 ) continue;
+
+				if ( t.event_peaktime==null || t.event_peaktime.length()<2 ){
+					if ( t.event_starttime == null || t.event_starttime.length()<2 ) continue;
+					t.event_peaktime = t.event_starttime;
+				}
 				long key = t.get_poskey();
 				cal.setTime( lmsalformat.parse(t.event_starttime.replaceAll("T", " ") ) );
 				long value = cal.getTimeInMillis();
@@ -172,39 +211,14 @@ public class ImgDownloader {
 			annos=null;
 			System.out.println( flare.size() );			
 			
-			for (Anno t : flare){
-				if ( t.event_starttime.compareTo( t.event_endtime ) == 0 ){
-					System.out.println("Flare: time sequence bug occurred!");
-				}
-			}
-			ArrayList<String> names = new ArrayList<String>();
-			for (String t : imgnames){
-				String strs[] = t.split("[_,.]");
-				if ( strs.length != 5 ) continue;
-				if ( strs[3].compareTo("4500") == 0 ) continue;
-				names.add(t);
-			}
-			
-			ArrayList<SunFrame> sunFrames = new ArrayList<SunFrame>(); 
-			int len = names.size();
-			for ( int i=0; i<len; i++ ){
-				int cnt = 0, j = i;
-				SunFrame sunFrame = new SunFrame(); 
-				while( cnt<9 && j<len ){
-					String t = names.get(j);
-					sunFrame.add(t);
-					cnt++;	j++;
-				}
-				if ( sunFrame.check() ){
-					sunFrames.add( sunFrame );
-					i = i+8;
-				}
-			}
-			System.out.println( "imgnames size: " + names.size() );
-			System.out.println( "sunFrames size: " + sunFrames.size() );
-			
-			names = null;
-			len = sunFrames.size();
+//			for (Anno t : flare){
+//				if ( t.event_starttime.compareTo( t.event_endtime ) == 0 ){
+//					System.err.println("Flare: time sequence bug occurred!");
+//				}
+//			}
+		
+			ArrayList<SunFrame> sunFrames = genSunFrames();
+
 			ArrayList<String> eve0 = new ArrayList<String>();
 			ArrayList<String> eve1 = new ArrayList<String>();
 			for (Anno t : flare){
@@ -213,12 +227,29 @@ public class ImgDownloader {
 			}
 			Collections.sort(eve0);
 			Collections.sort(eve1);
+			
+			Collections.sort(flare, new Comparator<Anno>(){
+				public int compare(Anno x, Anno y){
+					return x.event_peaktime.compareTo( y.event_peaktime );
+				}
+			});
 
 			int idx0=0, idx1=0, n=flare.size();
 			for (SunFrame t : sunFrames){
-				while( idx0<n && eve0.get(idx0).compareTo( t.time1 ) <= 0 ) idx0++;
-				while( idx1<n && eve1.get(idx1).compareTo( t.time0 ) < 0 ) idx1++;
-				t.hit = idx0 - idx1;
+//				while( idx0<n && eve0.get(idx0).compareTo( t.time1 ) <= 0 ) idx0++;
+//				while( idx1<n && eve1.get(idx1).compareTo( t.time0 ) < 0 ) idx1++;
+//				t.hit = idx0 - idx1;
+
+				while( idx0<n && flare.get(idx0).event_peaktime.compareTo( t.starttime ) < 0 ) idx0++;
+				while( idx1<n && flare.get(idx1).event_peaktime.compareTo( t.endtime ) <= 0 ) idx1++;
+				for (int i=idx0; i<idx1; i++){
+					Anno p = flare.get(i);
+					double weight =	Math.max( 
+							Math.max( Math.abs(p.left), Math.abs(p.right) ),
+							Math.max( Math.abs(p.up), Math.abs(p.down) ) );
+					weight = 1.0 - 1.0 / (1.0 + Math.exp( -(weight - 850.0)/100.0 ) );									
+					t.hit += p.area * weight;
+				}
 			}
 
 			Collections.sort( sunFrames,new Comparator<SunFrame>(){
@@ -226,16 +257,122 @@ public class ImgDownloader {
 	                return ( x.hit > y.hit ? -1 : x.hit < y.hit ? 1 : 0);
 	            }
 	        });
-		
-			for (int i=0; i<200; i++){
-				ret.add(  sunFrames.get(i) );
+			
+			int cnt = 0;
+			for (SunFrame t : sunFrames){
+				if ( t.hit <= 0 ) break;
+				if ( ++cnt >= 65 ) break;
+				ret.add( t );
 			}
+			System.out.println("need " + cnt + " pictures.");
+//			for (SunFrame t : ret){
+//				 System.out.println( t.starttime + " " + t.hit );
+//			}
+			
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 		return ret;
+	}
+	
+	void saveAnnotation(){
+		try
+		{
+			//read annotation
+			File file = new File("../../Code/demo1/demo1/lmsal.txt");
+			BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream( file ) ) );
+			String str;
+			ArrayList<Anno> annosorg = new ArrayList<Anno>(); 
+			while( ( str=br.readLine() ) !=null ){
+				Anno t = new Anno();
+				t.set(str);
+				annosorg.add(t);
+			}
+			br.close();
+			
+			System.out.println( "annos size : " + annosorg.size() );
+			ArrayList<Anno> annos = new ArrayList<Anno>();
+			HashMap<Long,Long> hm = new HashMap<Long,Long>();
+			SimpleDateFormat lmsalformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Calendar cal = Calendar.getInstance();		
+			for ( Anno t : annosorg ){
+				if ( t.event_endtime.compareTo("2013-01-01T00:00:00") > 0 ) continue;
+
+				if ( t.area > 2e6 || t.area < 1e4 ) continue;
+
+				if ( t.concept.compareTo("Flare") == 0 && t.area < 3e4 ) continue;
+				if ( t.concept.compareTo("Coronal Hole") == 0 && t.area < 1e5 ) continue;
+
+				if ( t.event_peaktime==null || t.event_peaktime.length()<2 ){
+					if ( t.event_starttime == null || t.event_starttime.length()<2 ) continue;
+					t.event_peaktime = t.event_starttime;
+				}
+				long key = t.get_poskey();
+				cal.setTime( lmsalformat.parse(t.event_starttime.replaceAll("T", " ") ) );
+				long value = cal.getTimeInMillis();
+				if ( hm.containsKey(key) ){
+					if ( Math.abs( hm.get(key) - value ) < 1000*60*60*24 )	continue;
+				}
+				hm.put(key, value);
+
+				annos.add( t );
+				//t.print();	if ( flare.size()>30 ) break;
+			}
+
+			System.out.println( "after filter : " + annos.size() );			
+			
+			ArrayList<SunFrame> sunFrames = genSunFrames();
+			
+			Collections.sort(annos, new Comparator<Anno>(){
+				public int compare(Anno x, Anno y){
+					return x.event_peaktime.compareTo( y.event_peaktime );
+				}
+			});
+			Collections.sort(sunFrames, new Comparator<SunFrame>(){
+				public int compare(SunFrame x, SunFrame y){
+					return x.starttime.compareTo( y.starttime );
+				}
+			});
+
+			writeFile("anno_nasa_lmsal.txt","#img1,img2,...,img9,{Flare,Coronal Hole,Sunspot},"
+					+ "left,up,right,down,\n",false);
+			int cnt = 0;
+			int idx0=0, idx1=0, n=annos.size();
+			for (SunFrame t : sunFrames){
+//				while( idx0<n && annos.get(idx0).event_peaktime.compareTo( t.starttime ) < 0 ) idx0++;
+//				while( idx1<n && annos.get(idx1).event_peaktime.compareTo( t.endtime ) <= 0 ) idx1++;
+				
+				if ( !t.exist() ) continue;
+				for (int i=0; i<n; i++){
+					Anno p = annos.get(i);
+					if ( p.event_starttime.compareTo( t.endtime ) > 0 ) continue;
+					if ( p.event_endtime.compareTo( t.starttime ) < 0 ) continue;
+					if ( p.event_peaktime == "2011-08-09T11:55:00" ){
+						System.out.println( p.left + "," + p.up + "," + p.right + "," + p.down );
+					}
+					cnt++;
+					String outstr = "";
+					for (String name : t.getnames() ){
+						outstr += name + ",";
+					}
+					outstr += p.concept + ",";
+					outstr +=p.left + "," + p.up + "," + p.right + "," + p.down + ",";
+					outstr += "\n";
+					writeFile("anno_nasa_lmsal.txt", outstr, true);
+				}
+			}
+
+
+			System.out.println("write " + cnt + " annotations.");
+			
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
 	}
 	
 	void Downloadimg(int N){
@@ -250,7 +387,7 @@ public class ImgDownloader {
 
 		Object b = new Object();
 		MDowns test = new MDowns(names, b);
-		for (int i=0; i<3; i++){
+		for (int i=0; i<4; i++){
 			new Thread(test).start();
 		}
 		synchronized (b){
@@ -286,6 +423,8 @@ public class ImgDownloader {
 			System.out.println("finish~");
 		}
 	}
+	
+	
 	public static void main(String[] args) throws ParseException {
 		
 		ImgDownloader t = new ImgDownloader();
@@ -293,10 +432,13 @@ public class ImgDownloader {
 		//t.test();
 		
 		t.get_all_filename(120);
-		t.Downloadimg(120);
-
+		
+		//t.Downloadimg(120);
+		
+		t.saveAnnotation();
 
 	}
+	
 	private static void writeFile(String path, String outputStr, boolean append)
 	{
 	    try
@@ -317,6 +459,7 @@ public class ImgDownloader {
 	class SunFrame{
 		String names[] = new String[9];
 		String time0, time1;
+		String starttime, endtime;
 		int hit = 0;
 		int size = 0;
 		long tmin=Long.MAX_VALUE, tmax=Long.MIN_VALUE;
@@ -327,6 +470,12 @@ public class ImgDownloader {
 		}
 		public String[] getnames(){
 			return names;
+		}
+		public boolean exist(){
+			for (String name : names){
+				if ( !(new File(imgpath+name).exists()) ) return false;
+			}
+			return true;
 		}
 		public boolean check(){
 			if ( size < 9 ) return false;
@@ -343,10 +492,18 @@ public class ImgDownloader {
 				if ( tmax - tmin > 8*60*1000 ) return false;
 				time0 = lmsalformat.format( tmin ).toString().replaceAll(" ", "T");
 				time1 = lmsalformat.format( tmax ).toString().replaceAll(" ", "T");
+				starttime = lmsalformat.format( tmin - 8*60*1000 ).toString().replaceAll(" ", "T");
+				endtime = lmsalformat.format( tmax + 8*60*1000 ).toString().replaceAll(" ", "T");
 			} catch (ParseException e) {
 				e.printStackTrace();
 				return false;
 			}
+			Arrays.sort(names, new Comparator<String>(){
+				public int compare(String x, String y){
+					return x.substring(x.length()-8, x.length()-4).compareTo(
+							y.substring(y.length()-8, y.length()-4) );
+				}
+			});
 			return true;
 		}
 	}
@@ -419,12 +576,13 @@ public class ImgDownloader {
 						"http://[2001:778:0:ffff:64:0:80b7:a824]/assets/img/browse/"
 						//"http://sdo.gsfc.nasa.gov/assets/img/browse/"
 						+name.substring(0, 4)+"/"+name.substring(4, 6)+"/"+name.substring(6, 8)+"/"+name;
-				System.out.println(url);
+				
 				File file = new File("img/"+name);
 				//don't download again
 				if ( file.exists() ) continue;
 
 				System.gc();
+				System.out.println(url);
 				Httpcom httpcom = new Httpcom();
 				byte []img = httpcom.get(url);
 				FileOutputStream fos;

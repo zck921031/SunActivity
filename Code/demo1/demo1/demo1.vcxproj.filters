@@ -44,5 +44,8 @@
     <ClInclude Include="demo1.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="traindata_nasa.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
