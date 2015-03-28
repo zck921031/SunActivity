@@ -1,3 +1,5 @@
+#pragma once
+
 #include "nca.h"
 
 namespace nca_debug{
@@ -83,7 +85,7 @@ namespace nca_debug{
 			dist[i].first = distance2(x, train_x[i], A);
 			dist[i].second = train_label[i];
 		}
-		sort( begin(dist), end(dist) );		
+		sort( begin(dist), end(dist) );
 		int K = 3;
 		map<int,int> mp;
 		int ret = -1, best = -1;

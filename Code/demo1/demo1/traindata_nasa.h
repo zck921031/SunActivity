@@ -1,7 +1,9 @@
 #pragma once
 
 #include"demo1.h"
+#include"nca.h"
 #include"feature.h"
+#include<direct.h>
 
 class AnnoFrameBase{
 public:
@@ -41,11 +43,19 @@ public:
 		}
 		return true;
 	}
-	//
-	int show(){
+	
+	int show_sub(){
 		if (!success) return -1;
-		int L=left, R=right, U=up, D=down;
-		if (L<0 || L>=src[0].cols || R<0 || R>=src[0].cols || U<0 || U>=src[0].rows || D<0 || D>=src[0].rows) return -1;
+		return _show( left, right, up, down );
+	}
+	int show_full(){
+		if (!success) return -1;
+		return _show( 0, src[0].cols, 0, src[0].rows );
+	}
+	//
+	int _show(int L, int R, int U, int D){
+		if (!success) return -1;
+		if (L<0 || L>src[0].cols || R<0 || R>src[0].cols || U<0 || U>src[0].rows || D<0 || D>src[0].rows) return -1;
 
 		//œ‘ æ9≤®∂ŒÕº∆¨
 		if(true)
@@ -92,7 +102,6 @@ public:
 			}
 		}
 	}
-
 };
 
 
@@ -131,10 +140,10 @@ public:
 		double D = atof( strs[i++].c_str() );
 
 		//assert: left<right, up<down
-		left = L/0.6 + Size/2;
-		right = R/0.6 + Size/2;
-		up = -U/0.6 + Size/2;
-		down = -D/0.6 + Size/2;
+		left = (int) (L/0.6 + Size/2);
+		right = (int) (R/0.6 + Size/2);
+		up = (int)(-U/0.6 + Size/2);
+		down =  (int)(-D/0.6 + Size/2);
 		//cout<<left<<" " <<right<<" "<<up<<" "<<down<<endl;
 		success = false;
 	}
@@ -176,6 +185,18 @@ public:
 				gray[i] = res;
 			}
 			success = true;
+		}
+	}
+	
+	void save(string path, int id){
+		for (int i=0; i<9; i++){
+			char buf[20];
+			itoa(id, buf, 10);
+			_mkdir( (path + buf).c_str() );
+			string filename = path + buf + "//" + names[i].substr(21,4)+".jpg";
+			//cout<<filename<<endl;
+			Mat t(src[i], Rect(left, up, right - left, down - up ) );
+			imwrite(filename.c_str() , t);
 		}
 	}
 };
@@ -240,7 +261,7 @@ void checkallimg(){
 			}
 			
 			cout<<f.concept<<" "<<f.names[0].substr(0,15)<<" ("<<f.left<<"," <<f.up<<","<<f.right<<","<<f.down<<")"<<endl;
-			int key = f.show();
+			int key = f.show_sub();
 			//enter ESC
 			if ( 0x1B == key ) {
 				bk = true;
@@ -268,12 +289,234 @@ void checkallimg(){
 	
 }
 
-void generate_traindata(){	
+void generate_traindata(){
+	string check;
+	cout<<"enter \"start\" to continue"<<endl;
+	cin>>check;
+	if ( check!="start" ) return ;
+
+	string path = "..//..//..//data//TrainSet//";
+	vector<string> w;
+	ifstream in;
 	in.open("anno_nasa.good");
+	char buf[10240];
 	while( in.getline(buf, 10240) ){
 		string t = buf;
-		checked.insert(t);
+		if ( t.length()>0 && t[0]=='#' ) continue;
+		w.push_back(t);
 	}
 	in.close();
+
+	ofstream os;
+	os.open(path+"Annotation.txt");
+	string outstr = "#id,img1,img2,...,img9,{Flare,Coronal Hole,Sunspot},left,up,right,down,";
+	os<<outstr<<endl;
+
+	int N = w.size();
+	AnnoFrame f, f_pre;
+	for (int i=0; i<N; i++){
+		
+		if ( i>0 ) f_pre.set(w[i-1]);
+		f.set( w[i] );
+		if (  f.isSameImgTo(f_pre) ){
+			f.success = 1;
+		}else{
+			f.read_img();
+		}
+
+		f.save(path+"img//", i);
+		
+		cout<< (double)i/N *100<<"%" <<endl;
+
+		os<<i<<","<<w[i]<<endl;
+		
+		//if(i>=2) break;
+		
+	}
+	os.close();
+
+}
+
+
+class SunFrame : public AnnoFrameBase{	
+	static const int Size = 4096;
+	static string path;
+public:
+	vector<double> feature;
+	string id;
+	void set(string str){
+		vector<string> strs;
+		int i=-1, j=-1;		
+		while( ( j = str.find(",", i+1) ) != string::npos || ( j = str.find("\n", i+1) ) != string::npos ){
+			string t = str.substr(i+1, j-i-1);
+			//cout<<t<<endl;
+			strs.push_back(t);
+			i = j;			
+		}
+		i=0;
+		id = strs[i++];
+		for ( ; i<10; i++ ){
+			names[i-1] = strs[i].substr(21,4)+".jpg";
+		}
+		concept = strs[i++];
+		
+		double L = atof( strs[i++].c_str() );
+		double U = atof( strs[i++].c_str() );
+		double R = atof( strs[i++].c_str() );
+		double D = atof( strs[i++].c_str() );
+		//assert: left<right, up<down
+		left = (int) (L/0.6 + Size/2);
+		right = (int) (R/0.6 + Size/2);
+		up = (int)(-U/0.6 + Size/2);
+		down =  (int)(-D/0.6 + Size/2);
+		//cout<<left<<" " <<right<<" "<<up<<" "<<down<<endl;
+		success = false;
+	}
+
+	void read_img(){
+		string filenames[9];
+		bool succ[9];
+		for (int i=0; i<9; i++){
+			filenames[i] = path + id + "//" + names[i];
+			succ[i] = false;
+		}
+		thread t[9];
+		for (int i=0; i<9; i++){
+			t[i] = thread( MultiReader::read_foo, filenames[i], &src[i], &gray[i], &succ[i] );
+		}
+		success = true;
+		for (int i=0; i<9; i++){
+			t[i].join();
+			success &= succ[i];
+			if ( !src[i].data ) cerr<<"mutilreader bug"<<endl;
+			if ( !gray[i].data ) cerr<<"mutilreader bug"<<endl;
+		}
+	}
+	void calc_feature(){
+		feature.clear();
+		vector<double> res;
+		for (int i=0; i<9; i++){
+			res = get_ColorMoment_from_mat( gray[i] );
+			for (double t : res) feature.push_back( t );
+			res = get_texture_from_mat( gray[i] );
+			for (double t : res) feature.push_back( t );
+		}
+
+		/*
+		for (int i=0; i<9; i++){
+			for (int j=0; j<3+16; j++){
+				if ( j<7 ) cout<<feature[i*19 + j]<<" ";
+			}
+			cout<<endl;
+		}
+		*/
+
+	}
+};
+string SunFrame::path = "..//..//..//data//TrainSet//img//";
+
+void calc_train_feature(){
+	string path = "..//..//..//data//TrainSet//";
+	vector<string> w;
+	ifstream in;
+	in.open( path + "Annotation.txt" );
+	char buf[10240];
+	while( in.getline(buf, 10240) ){
+		string t = buf;
+		if ( t.length()>0 && t[0]=='#' ) continue;
+		w.push_back(t);
+	}
+	in.close();
+
+	ofstream os;
+	os.open( path + "data.txt" );
+	for ( string t : w ){
+		SunFrame s;
+		s.set(t);
+		s.read_img();
+		s.calc_feature();
+		
+		//int key = s.show_full();
+		cout<<s.id<<endl;
+		//if ( 0x1b == key ) break;
+
+		if ( s.concept == "Flare" ) os<<"1,";		
+		else if ( s.concept == "Coronal Hole" ) os<<"2,";
+		else if ( s.concept == "Sunspot" ) os<<"3,";
+		else continue;
+		for ( double f : s.feature ){
+			os<<f<<",";
+		}
+		os<<endl;
+
+		//break;
+	}
+	os.close();
+	
+}
+
+void train(){	
+	string path = "..//..//..//data//TrainSet//";
+	ifstream in;
+	in.open( path + "data.txt" );
+	
+	vector<int> label, train_label, test_label;
+	vector< vector<double> > x, train_x, test_x;
+	int N=0, D;
+
+	char* buf = new char[1024000];
+	while( in.getline(buf, 1024000) ){
+		string str = buf;
+		if ( str.length()>0 && str[0]=='#' ) continue;
+		N++;
+		vector<string> strs;
+		int i=-1, j=-1;		
+		while( ( j = str.find(",", i+1) ) != string::npos || ( j = str.find("\n", i+1) ) != string::npos ){
+			string t = str.substr(i+1, j-i-1);
+			//cout<<t<<endl;
+			strs.push_back(t);
+			i = j;
+		}
+		label.push_back( atoi(strs[0].c_str()) );
+		D = strs.size() - 1;
+		vector<double> tmp;
+		for (int i=1; i<=D; i++){
+			tmp.push_back( atof(strs[i].c_str()) );
+		}
+		x.push_back(tmp);
+	}
+	in.close();
+	delete []buf;
+
+	/*
+	for (int i=0; i<3; i++){
+		cout<<label[i]<<endl;
+		for (int j=0; j<D; j++){
+			cout<<x[i][j]<<",";
+		}
+		cout<<endl;
+	}*/
+	srand(19921031);
+	for (int i=0; i<N; i++){
+		//if ( rand()%10 <=  7 )
+		if ( i%100 < 50 )
+		{
+			test_label.push_back(  label[i] );
+			test_x.push_back(  x[i] );
+		}else{
+			train_label.push_back(  label[i] );
+			train_x.push_back(  x[i] );
+		}
+	}
+	
+	cout<<"train size: "<<train_label.size()<<" "<<train_x.size()<<endl;
+	cout<<"test size: "<<test_label.size()<<" "<<test_x.size()<<endl;	
+	
+	vector< vector<double> > A = vector< vector<double> >(D, vector<double>(D, 0) );
+	for (int i=0; i<D; i++) A[i][i] = 1;
+
+	double test_rate = nca_debug::test(train_x, train_label, test_x, test_label, A);
+	cout<<"simple knn, accuracy is: "<<test_rate<<endl;
+	//nca_debug::wine_demo();
 
 }

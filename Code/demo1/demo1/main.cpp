@@ -23,8 +23,14 @@ int main()
 
 	//show_flare_example();
 
-	checkallimg();
+	//checkallimg();
 
+	//generate_traindata();
+
+	//calc_train_feature();
+
+	train();
+	
 	return 0;
 
 	// ∂¡»Î“ª’≈Õº∆¨
