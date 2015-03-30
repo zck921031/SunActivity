@@ -3,20 +3,28 @@
 #include "nca.h"
 
 namespace nca_debug{
-	//O(nd)
+	
+	//O(D)
+	double distance2(const vector<double>&x, const vector<double>&y){
+		double sum = 0;
+		for (int i=x.size()-1; i>=0; i--){
+			sum += (x[i]-y[i])*(x[i]-y[i]);
+		}
+		return sum;
+	}
+	//O(Dd)
 	double distance2(const vector<double>&x, const vector<double>&y, const vector< vector<double> > &A){
 		assert(  x.size() == y.size() && x.size()>0 && A.size()>0 && x.size()==A[0].size() );
 		int d = A.size();
-		int n = A[0].size();
+		int D = A[0].size();
 		double sum = 0;
-		vector<double> u(n);
-		for (int i=0; i<n; i++){
+		vector<double> u(D);
+		for (int i=0; i<D; i++){
 			u[i] = x[i]-y[i];
 		}
-		
 		for (int i=0; i<d; i++){
 			double tmp = 0;
-			for (int j=0; j<n; j++){
+			for (int j=0; j<D; j++){
 				tmp += A[i][j] * u[j];
 			}
 			sum += tmp*tmp;
@@ -50,7 +58,8 @@ namespace nca_debug{
 		}
 		x  = t;
 	}
-	double get_F(const matrix2d&x, const vector<int>&label, const matrix2d&A){
+	double getF(const matrix2d&x, const vector<int>&label, const matrix2d&A){
+		cout<<"Enter getF, this is a slower method."<<endl;
 		int N  = x.size();
 		double F = 0;
 		vector<double> s(N,0);
@@ -70,6 +79,53 @@ namespace nca_debug{
 		if ( F!=F ) F = -1;
 		return F;
 	}
+
+	//project X to an optimized space: X := AX, here X \in mathbb{R}^{DxN} while in the program X is D cols with N rows.
+	matrix2d project(const matrix2d&x_origin, const matrix2d&A ){		
+		int N = x_origin.size();
+		int D = x_origin[0].size();
+		int d = A.size();
+		matrix2d x = matrix2d(N, vector<double>(d,0) );
+		for (int i=0; i<N; i++){
+			for (int a=0; a<d; a++){
+				for (int b=0; b<D; b++){
+					x[i][a] += A[a][b] * x_origin[i][b];
+				}
+			}
+		}
+		return x;
+	}
+
+	double getF_fast(const matrix2d&x_origin, const vector<int>&label, const matrix2d&A, matrix2d &p, vector<double> &P){
+		matrix2d x;
+		x = project(x_origin, A);
+		//x = x_origin;
+		int N = x.size();
+		p = matrix2d(N, vector<double>(N,0) );
+		P = vector<double>(N,0);
+		double F = 0;
+		vector<double> s(N,0);
+		for (int i=0; i<N; i++){
+			double fm = 0;
+			for (int j=0; j<N; j++){
+				s[j] = exp( -distance2(x[i], x[j]) );
+				if( i==j ) s[j] = 0;
+				fm += s[j];
+			}
+			for (int j=0; j<N; j++){
+				p[i][j] = s[j] / fm;
+				if ( label[i] == label[j] ) {
+					P[i] += p[i][j];
+					F += p[i][j];
+				}
+			}
+		}
+		if ( F!=F ) F = -1;
+		//cout<<distance2(x[0], x[1])<<" "<<distance2(x[0], x[1], A)<<" F:"<<F<<endl;
+		//exit(0);
+		return F;
+	}
+
 	int classify_1(const matrix2d&train_x, const vector<int>&train_label, const vector<double>&x, const matrix2d&A){
 		int N = train_x.size();
 		vector<double> score(N,0);
@@ -78,11 +134,16 @@ namespace nca_debug{
 		}
 		return max_element( score.begin(), score.end() ) - score.begin();
 	}	
-	int classify_knn(const matrix2d&train_x, const vector<int>&train_label, const vector<double>&x, const matrix2d&A){
+	int classify_knn(const matrix2d&train_x, const vector<int>&train_label, const vector<double>&x, const matrix2d&A = matrix2d() ){
+		bool useEuclidean = A.empty();
 		int N = train_x.size();
 		vector< pair<double,int> > dist(N);
 		for (int i=0; i<N; i++){
-			dist[i].first = distance2(x, train_x[i], A);
+			if (useEuclidean){
+				dist[i].first = distance2(x, train_x[i]);
+			}else{
+				dist[i].first = distance2(x, train_x[i], A);
+			}
 			dist[i].second = train_label[i];
 		}
 		sort( begin(dist), end(dist) );
@@ -98,18 +159,85 @@ namespace nca_debug{
 		}
 		return ret;
 	}
-	double test(const matrix2d&train_x, const vector<int>&train_label,const matrix2d&test_x, const vector<int>&test_label, const matrix2d&A){
+
+
+	double test(const matrix2d&train_x_origin, const vector<int>&train_label,
+		const matrix2d&test_x_origin, const vector<int>&test_label, const matrix2d&A){
+		matrix2d train_x = project(train_x_origin, A);
+		matrix2d test_x = project(test_x_origin, A);
 		int right = 0;
 		int M = test_x.size();
 		for (int i=0; i<M; i++){
-			if ( classify_knn(train_x, train_label, test_x[i], A ) == test_label[i] ) right++;
+			if ( classify_knn(train_x, train_label, test_x[i] ) == test_label[i] ) right++;
 		}
 		return (double)right/M;
 	}
+
 }
 using namespace nca_debug;
 
-matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, double step )
+matrix2d Gradient1(const matrix2d&x, const vector<int>&label, const matrix2d&A, const matrix2d &p, const vector<double> &P ){
+	cout<<"Enter Gradient1, this is a slower method."<<endl;
+	int d = A.size();
+	int D = A[0].size();
+	int N = x.size();
+	matrix2d G = matrix2d(d, vector<double>(D,0) );
+	matrix2d t = matrix2d(d, vector<double>(D,0) );
+	vector<double> u(D,0);
+	for (int i=0; i<N; i++){
+		for (int k=0; k<N; k++){
+			for (int a=0; a<D; a++)	u[a] = x[i][a] - x[k][a];
+			for (int a=0; a<d; a++){
+				for (int b=0; b<D; b++){
+					t[a][b] = u[a]*u[b];
+				}
+			}
+			addby(G, P[i]*p[i][k], t);			
+			if (  label[i] == label[k] ){				
+				addby(G, -p[i][k], t);
+			}
+		}
+	}
+	multiby(G, 2, A);
+	return G;
+}
+
+matrix2d Gradient1_fast(const matrix2d&x, const vector<int>&label, const matrix2d&A, const matrix2d &p, const vector<double> &P){
+	int d = A.size();
+	int D = A[0].size();
+	int N = x.size();
+	matrix2d C = matrix2d(N, vector<double>(N,0) );
+	for (int i=0; i<N; i++){
+		for (int j=0; j<N; j++){
+			double cov = P[i]*p[i][j];			
+			if (  label[i] == label[j] ){
+				cov -= p[i][j];
+			}
+			C[i][i] += cov;	C[j][j] += cov;
+			C[i][j] -= cov;	C[j][i] -= cov;
+		}
+	}
+	
+	matrix2d G = matrix2d(d, vector<double>(D,0) );
+	matrix2d Gi = G;
+	for (int i=0; i<N; i++){
+		vector<double> t(N,0);
+		for (int j=0; j<N; j++){
+			addby(t, C[i][j], x[j]);			
+		}
+		for (int j=0; j<D; j++){
+			for (int k=0; k<D; k++){
+				Gi[j][k] = x[i][j]*t[k];
+			}
+		}
+		addby(G, 1.0, Gi);
+	}
+	multiby(G, 2, A);
+	return G;
+}
+
+
+matrix2d nca_solve1(const matrix2d&x, const vector<int>&label, int d, int iter, double step )
 {
 	assert( x.size() == label.size() );
 	assert( d>=1 && iter>=1 );
@@ -117,66 +245,34 @@ matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, d
 	int N = x.size();
 	int D = x[0].size();
 	vector< vector<double> > A = vector< vector<double> >(d, vector<double>(D,0) );
-	for ( int i=0; i<min(d,D); i++ ) A[i][i] = 0.03;
+	for ( int i=0; i<min(d,D); i++ ) A[i][i] = 1.0/D;
 
+	vector<double> P(N,0);
+	matrix2d p = matrix2d(N, vector<double>(N,0) );
 	while ( iter-- > 0 ){
 		double F = 0;
-		vector<double> P(N,0);
-		matrix2d p = matrix2d(N, vector<double>(N,0) );
-		for (int i=0; i<N; i++){
-			vector<double> s(N,0);
-			double fm = 0;
-			for (int j=0; j<N; j++){
-				s[j] = exp( -distance2(x[i], x[j], A) );
-				if( i==j ) s[j] = 0;
-				fm += s[j];
-			}
-			for (int j=0; j<N; j++){
-				p[i][j] = s[j] / fm;
-				if ( label[i] == label[j] ) {
-					P[i] += p[i][j];
-					F += p[i][j];
-				}
-			}
-			//cout<<i<<" : "<<fm<<endl;
-		}	
+		F = getF_fast(x, label, A, p, P);
 	//	for (int i=0; i<N; i++){
 	//		cout<<"P["<<i<<"] = "<<P[i]<<" label: "<<label[i]<<endl;
 	//	}	
 		cout<<"F: "<<F<<" ";	//checked!
 		cout<<"test: "<<test(x, label, x, label, A)<<endl;
-		
-		//求出导数
-		matrix2d G = matrix2d(d, vector<double>(D,0) );
-		matrix2d t = matrix2d(d, vector<double>(D,0) );
-		vector<double> u(D,0);
-		for (int i=0; i<N; i++){
-			for (int k=0; k<N; k++){
-				for (int a=0; a<D; a++)	u[a] = x[i][a] - x[k][a];
+		//计算梯度G
+		//matrix2d G = Gradient1(x, label, A, p, P);
+		matrix2d G = Gradient1_fast(x, label, A, p, P);
+	
 
-				for (int a=0; a<D; a++){
-					for (int b=0; b<D; b++){
-						t[a][b] = u[a]*u[b];
-					}
-				}
-				addby(G, P[i]*p[i][k], t);
-			
-				if (  label[i] == label[k] ){				
-					addby(G, -p[i][k], t);
-				}
-			}
-		}
-		multiby(G, 2, A);		
 //		for (int i=0; i<d; i++){
 //			for (int j=0; j<d; j++){
 //				cout<<G[i][j]<<" ";
 //			}
 //			cout<<endl;
 //		}
+
 		matrix2d A_tmp=A, A_best=A;
 		double F_best = 0;
 		//避免出现数值运算问题
-//		while ( (F_tmp=get_F(x, label, A_tmp)<0) ){
+//		while ( (F_tmp=getF_fast(x, label, A, p, P)<0) ){
 //			for (int i=0; i<d; i++){
 //				for (int j=0; j<D; j++){ 
 //					A_tmp[i][j] *= 0.8;
@@ -191,7 +287,7 @@ matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, d
 					A_tmp[i][j] = A[i][j] + step * G[i][j];
 				}
 			}
-			double F_tmp=get_F(x, label, A_tmp);
+			double F_tmp=getF_fast(x, label, A_tmp, p, P);
 			if ( F_tmp > F_best ) {
 				F_best = F_tmp;
 				A_best = A_tmp;
@@ -206,9 +302,16 @@ matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, d
 		}else{
 			break;
 		}
+
+		//cout<<"Press Y for continue."<<endl;
+		//char buf[1024];
+		//cin.getline(buf, 1024);
+		//if ( !(*buf=='Y' || *buf=='y') ) break;
 	}
 	return A;
 }
+
+
 
 void wine_demo(){
 	//read train data
@@ -250,4 +353,10 @@ void wine_demo(){
 	//run testing using A
 	cout<<"after dml, test is: "<<test(train_x, train_label, test_x, test_label, A)<<endl;
 
+}
+
+
+
+matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, double step ){
+	return nca_solve1(x, label, d, iter, step );
 }

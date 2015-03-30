@@ -4,7 +4,7 @@
 
 #define matrix2d vector< vector<double> >
 
-vector< vector<double> > nca_solve(vector<double> x, vector<int> lable, int n, int d, int iter_bound, double step );
+matrix2d nca_solve(const matrix2d&x, const vector<int>&label, int d, int iter, double step );
 void wine_demo();
 
 namespace nca_debug{

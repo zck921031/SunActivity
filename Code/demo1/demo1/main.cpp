@@ -27,6 +27,8 @@ int main()
 
 	//generate_traindata();
 
+	//generate_negative_traindata(0);
+
 	//calc_train_feature();
 
 	train();

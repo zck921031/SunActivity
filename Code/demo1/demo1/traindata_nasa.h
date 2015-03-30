@@ -52,13 +52,46 @@ public:
 		if (!success) return -1;
 		return _show( 0, src[0].cols, 0, src[0].rows );
 	}
+	
+	//显示整幅图片，标注区域用矩形框标出来。按空格切换波段，按其他结束。
+	int show_with_board(){
+		if (!success) return -1;		
+		if (left<0 || left>src[0].cols || right<0 || right>src[0].cols || up<0 || up>src[0].rows || down<0 || down>src[0].rows) 
+			return -1;
+		while(1){
+			for (const Mat &elem: src){
+				Mat t(elem);
+				for ( int c=-8; c<8; c++ )
+				{
+					for ( int i=left; i<right; i++ ){
+						t.at<Vec3b>( up+c, i ) = Vec3b(255, 0, 0);
+						t.at<Vec3b>( down+c, i ) = Vec3b(255, 0, 0);
+					}
+					for ( int i=up; i<down; i++ ){
+						t.at<Vec3b>( i, left+c ) = Vec3b(255, 0, 0);
+						t.at<Vec3b>( i, right+c ) = Vec3b(255, 0, 0);
+					}
+				}
+				Mat dst;
+				double scale = min( 1000.0/t.cols, 600.0/t.rows );
+				resize(t, dst, Size( (int)(scale*t.cols), (int)(scale*t.rows) ) );
+				string windowname = "1";
+				namedWindow( windowname );
+				imshow( windowname , dst);
+				int key = waitKey(0);
+				if ( 0x20 != key ){
+					return key;
+				}
+			}
+		}
+	}
 	//
-	int _show(int L, int R, int U, int D){
+	int _show(int L, int R, int U, int D, bool ALL = true, bool DESTROY = true){
 		if (!success) return -1;
 		if (L<0 || L>src[0].cols || R<0 || R>src[0].cols || U<0 || U>src[0].rows || D<0 || D>src[0].rows) return -1;
 
 		//显示9波段图片
-		if(true)
+		if(ALL)
 		while(1){
 			Mat sh( 3*(D-U), 3*(R-L), CV_8UC3 );
 			for (int i=0; i<3; i++){
@@ -96,12 +129,14 @@ public:
 				imshow( windowname , dst);
 				int key = waitKey(0);
 				if ( 0x20 != key ){
-					destroyWindow( windowname );
+					if (DESTROY) destroyWindow( windowname );
 					return key;
 				}
 			}
 		}
 	}
+
+
 };
 
 
@@ -199,6 +234,21 @@ public:
 			imwrite(filename.c_str() , t);
 		}
 	}
+
+	string serialize(){
+		stringstream os;
+		for (int i=0; i<9; i++){
+			os<<names[i]<<",";
+		}
+		os<<concept<<",";
+		double L = (left-Size/2)*0.6;
+		double R = (right-Size/2)*0.6;
+		double U = (Size/2-up)*0.6;
+		double D = (Size/2-down)*0.6;
+		os<<L<<","<<U<<","<<R<<","<<D<<",";
+		return os.str();
+	}
+
 };
 
 void checkallimg(){
@@ -337,6 +387,70 @@ void generate_traindata(){
 
 }
 
+void generate_negative_traindata(int begin){
+
+	ifstream in;
+	char buf[10240];
+	vector<string> work;
+	vector<AnnoFrame> a;
+	in.open("..//..//..//data//regional annotation//anno_nasa_lmsal.txt");
+	while( in.getline(buf, 10240) ){
+		AnnoFrame tmp;
+		string t = buf;
+		if ( t.length()<5 || t[0]=='#' ) continue;
+		work.push_back(t);
+		tmp.set(t);
+		a.push_back(tmp);
+	}
+	in.close();
+
+	
+	ofstream good, bad;
+	good.open("anno_nasa.null.good", ios::app);
+	vector<string> w;
+	string t_pre = "";
+	for (string t : work){
+		if ( t_pre.substr(0, 40) != t.substr(0,40) ){
+			if ( t.find("#") == string::npos ){
+				w.push_back(t);
+			}
+		}
+		t_pre = t;
+	}
+	int N = w.size();
+	cout<<w.size()<<endl;
+	for (int i=0; i<N; i++){
+		AnnoFrame f;
+		f.set("20110809_032451_4096_0094.jpg,20110809_032447_4096_0131.jpg,20110809_032425_4096_0171.jpg,20110809_032432_4096_0193.jpg,20110809_032450_4096_0211.jpg,20110809_032457_4096_0304.jpg,20110809_032453_4096_0335.jpg,20110809_032506_4096_1600.jpg,20110809_032520_4096_1700.jpg,Flare,586.0,552.0,1171.0,-71.0,");
+		
+		f.read_img();
+		/*
+		int key = f.show_sub();
+		//enter ESC
+		if ( 0x1B == key ) {
+			bk = true;
+			break;
+		}
+		if ( 'g' == key || 'G' == key || 'f' == key ){
+			cout<<"set the annotation good"<<endl;
+			good<<w[i]<<endl;
+			good.flush();
+		}else if ( 'b' == key || 'B' == key || 'j' == key ){
+			cout<<"set the annotation bad"<<endl;
+			bad<<w[i]<<endl;
+			bad.flush();
+		}else{
+			cout<<"skip the annotation"<<endl;
+		}*/
+
+		
+	}
+
+
+	in.close();
+	good.close();
+	
+}
 
 class SunFrame : public AnnoFrameBase{	
 	static const int Size = 4096;
@@ -392,6 +506,7 @@ public:
 			if ( !gray[i].data ) cerr<<"mutilreader bug"<<endl;
 		}
 	}
+
 	void calc_feature(){
 		feature.clear();
 		vector<double> res;
@@ -498,8 +613,8 @@ void train(){
 	}*/
 	srand(19921031);
 	for (int i=0; i<N; i++){
-		//if ( rand()%10 <=  7 )
-		if ( i%100 < 50 )
+		//if ( rand()%10 <=  6 )
+		if ( i%100 >= 10 )
 		{
 			test_label.push_back(  label[i] );
 			test_x.push_back(  x[i] );
@@ -518,5 +633,10 @@ void train(){
 	double test_rate = nca_debug::test(train_x, train_label, test_x, test_label, A);
 	cout<<"simple knn, accuracy is: "<<test_rate<<endl;
 	//nca_debug::wine_demo();
+
+	A = nca_solve( train_x, train_label, D, 100, 1 );
+	test_rate = nca_debug::test(train_x, train_label, test_x, test_label, A);
+	cout<<"after dml(NCA), accuracy is: "<<test_rate<<endl;
+
 
 }

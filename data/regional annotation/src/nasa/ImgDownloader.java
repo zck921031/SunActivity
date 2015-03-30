@@ -23,6 +23,9 @@ public class ImgDownloader {
 		
 	} 
 	
+	/**
+	 *  从nasa网站获取图片名字
+	 */
 	public Set<String> list_img_name(String date)
 	{
 		Set<String> ret = new TreeSet<String>();
@@ -72,6 +75,11 @@ public class ImgDownloader {
 		return ret;
 	}
 
+	/**
+	 * 由文件和网络获取N天的图片名字，放入imgnames
+	 * @param N
+	 * @throws ParseException
+	 */
 	public void get_all_filename(int N) throws ParseException{
 		HashSet<String> dates = new HashSet<String>();
 		File f = new File("NASA_img_name.txt");
@@ -132,7 +140,10 @@ public class ImgDownloader {
 		System.out.println( imgnames.size() );
 	}
 	
-	
+	/**
+	 * 根据照片的时间，将照片聚成每组9张图片的SunFrame
+	 * @return ArrayList<SunFrame>
+	 */
 	ArrayList<SunFrame> genSunFrames(){		
 		ArrayList<String> names = new ArrayList<String>();
 		for (String t : imgnames){
@@ -161,6 +172,12 @@ public class ImgDownloader {
 		System.out.println( "sunFrames size: " + sunFrames.size() );
 		return sunFrames;
 	}
+	
+	/**
+	 * 由lmsal的标记和已有图片，生成所需要的图片信息
+	 * @param N
+	 * @return
+	 */
 	ArrayList<SunFrame> get_need_img(int N){
 		ArrayList<SunFrame> ret = new ArrayList<SunFrame>();
 		try
