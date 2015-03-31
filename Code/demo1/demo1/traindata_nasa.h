@@ -59,8 +59,8 @@ public:
 		if (left<0 || left>src[0].cols || right<0 || right>src[0].cols || up<0 || up>src[0].rows || down<0 || down>src[0].rows) 
 			return -1;
 		while(1){
-			for (const Mat &elem: src){
-				Mat t(elem);
+			for (const Mat elem: src){
+				Mat t = elem.clone();
 				for ( int c=-8; c<8; c++ )
 				{
 					for ( int i=left; i<right; i++ ){
@@ -339,7 +339,7 @@ void checkallimg(){
 	
 }
 
-void generate_traindata(){
+void generate_traindata(string filename, int ID = 0){
 	string check;
 	cout<<"enter \"start\" to continue"<<endl;
 	cin>>check;
@@ -348,7 +348,7 @@ void generate_traindata(){
 	string path = "..//..//..//data//TrainSet//";
 	vector<string> w;
 	ifstream in;
-	in.open("anno_nasa.good");
+	in.open(filename.c_str() );
 	char buf[10240];
 	while( in.getline(buf, 10240) ){
 		string t = buf;
@@ -358,27 +358,29 @@ void generate_traindata(){
 	in.close();
 
 	ofstream os;
-	os.open(path+"Annotation.txt");
+	os.open(path + "Annotation.txt");
 	string outstr = "#id,img1,img2,...,img9,{Flare,Coronal Hole,Sunspot},left,up,right,down,";
 	os<<outstr<<endl;
 
 	int N = w.size();
 	AnnoFrame f, f_pre;
+	bool succ = false;
 	for (int i=0; i<N; i++){
-		
+		int id = i+ID;
 		if ( i>0 ) f_pre.set(w[i-1]);
 		f.set( w[i] );
 		if (  f.isSameImgTo(f_pre) ){
 			f.success = 1;
 		}else{
 			f.read_img();
+			succ = f.success;
 		}
-
-		f.save(path+"img//", i);
+		if (!succ) continue;
+		f.save(path+"img//", id);
 		
-		cout<< (double)i/N *100<<"%" <<endl;
+		cout<< (double)(i+1)/N *100<<"%" <<endl;
 
-		os<<i<<","<<w[i]<<endl;
+		os<<id<<","<<w[i]<<endl;
 		
 		//if(i>=2) break;
 		
@@ -410,7 +412,7 @@ void generate_negative_traindata(int begin){
 	vector<string> w;
 	string t_pre = "";
 	for (string t : work){
-		if ( t_pre.substr(0, 40) != t.substr(0,40) ){
+		if ( t_pre.substr(0, 30) != t.substr(0, 30) ){
 			if ( t.find("#") == string::npos ){
 				w.push_back(t);
 			}
@@ -419,29 +421,74 @@ void generate_negative_traindata(int begin){
 	}
 	int N = w.size();
 	cout<<w.size()<<endl;
-	for (int i=0; i<N; i++){
+	int p = 0, q = 0, r;
+	for (int i=begin; i<N; i++){
+		while ( p<(int)work.size() && work[p].substr(0,8)<w[i].substr(0,8) ) p++;
+		while ( q<(int)work.size() && work[q].substr(0,8)<=w[i].substr(0,8) ) q++;
+		r = p;
+		cout<<w[i].substr(0,17)<<endl;
+
 		AnnoFrame f;
-		f.set("20110809_032451_4096_0094.jpg,20110809_032447_4096_0131.jpg,20110809_032425_4096_0171.jpg,20110809_032432_4096_0193.jpg,20110809_032450_4096_0211.jpg,20110809_032457_4096_0304.jpg,20110809_032453_4096_0335.jpg,20110809_032506_4096_1600.jpg,20110809_032520_4096_1700.jpg,Flare,586.0,552.0,1171.0,-71.0,");
-		
+		//f.set("20110809_032451_4096_0094.jpg,20110809_032447_4096_0131.jpg,20110809_032425_4096_0171.jpg,20110809_032432_4096_0193.jpg,20110809_032450_4096_0211.jpg,20110809_032457_4096_0304.jpg,20110809_032453_4096_0335.jpg,20110809_032506_4096_1600.jpg,20110809_032520_4096_1700.jpg,Flare,586.0,552.0,1171.0,-71.0,");
+		f.set(w[i]);
 		f.read_img();
-		/*
-		int key = f.show_sub();
-		//enter ESC
-		if ( 0x1B == key ) {
-			bk = true;
-			break;
+		if ( !f.success ) continue;
+		int key = -1;
+		bool bk = false;
+		while ( key!='N' && key!='n' ){
+			bool isACR = false;
+			for (int j=p; j<q; j++){
+				int x[4] = {f.left, f.right, a[j].left, a[j].right};
+				int y[4] = {f.up, f.down, a[j].up, a[j].down };
+				set< pair<int,int> > s;
+				for (int u=0; u<4; u++){
+					for (int v=0; v<4; v++){
+						s.insert( make_pair(x[u], y[v]) );
+					}
+				}
+				int cnt = 0;
+				for (auto k : s){
+					if ( f.left<=k.first && k.first<=f.right && f.up<=k.second && k.second<=f.down
+					&& a[j].left<=k.first && k.first<=a[j].right && a[j].up<=k.second && k.second<=a[j].down ){
+						cnt++;
+					}
+				}
+				if (cnt>2) isACR = true;
+			}
+			if (isACR) cout<<"Warning, the region is active."<<endl;
+			else cout<<"The region is quiet."<<endl;
+			int dx=0, dy=0;
+			key = f.show_with_board();
+			//enter ESC
+			if ( 0x1B == key ) {
+				bk = true;
+				break;
+			}else if ( key=='c' || key=='C' ){
+				r++;
+				if (r>=q) r = r - q + p;
+				f.set( work[r] );
+				f.success = true;
+			}else if ( (key>>16)>=37 && (key>>16)<=40 ) {
+				switch (key>>16){
+					case 37:	dx = -(f.right-f.left)/2;	break;
+					case 38:	dy = -(f.down-f.up)/2;	break;
+					case 39:	dx = (f.right-f.left)/2;	break;
+					case 40:	dy = (f.down-f.up)/2;	break;
+				}
+			}
+			else if ( 13==key ){
+				f.concept = "null";
+				cout<<"Write a log: "<<f.serialize().substr(0,20)<<"..."<<endl;
+				good<<f.serialize()<<endl;
+			}
+			int left = f.left+dx, right = f.right+dx, up = f.up+dy, down = f.down+dy;
+			if (left<0 || left>4096 || right<0 || right>4096 || up<0 || up>4096 || down<0 || down>4096) continue;
+			else{
+				f.left = left, f.right = right, f.up = up, f.down = down;
+			}
+
 		}
-		if ( 'g' == key || 'G' == key || 'f' == key ){
-			cout<<"set the annotation good"<<endl;
-			good<<w[i]<<endl;
-			good.flush();
-		}else if ( 'b' == key || 'B' == key || 'j' == key ){
-			cout<<"set the annotation bad"<<endl;
-			bad<<w[i]<<endl;
-			bad.flush();
-		}else{
-			cout<<"skip the annotation"<<endl;
-		}*/
+		if ( bk ) break;
 
 		
 	}
@@ -551,13 +598,12 @@ void calc_train_feature(){
 		s.read_img();
 		s.calc_feature();
 		
-		//int key = s.show_full();
 		cout<<s.id<<endl;
-		//if ( 0x1b == key ) break;
 
 		if ( s.concept == "Flare" ) os<<"1,";		
 		else if ( s.concept == "Coronal Hole" ) os<<"2,";
 		else if ( s.concept == "Sunspot" ) os<<"3,";
+		else if ( s.concept == "null" ) os<<"0,";
 		else continue;
 		for ( double f : s.feature ){
 			os<<f<<",";
@@ -570,7 +616,8 @@ void calc_train_feature(){
 	
 }
 
-void train(){	
+void train(int fl=0, int fr=0x3f3f3f3f){
+	cout<<"using fl="<<fl<<" fr="<<fr<<endl;
 	string path = "..//..//..//data//TrainSet//";
 	ifstream in;
 	in.open( path + "data.txt" );
@@ -583,6 +630,7 @@ void train(){
 	while( in.getline(buf, 1024000) ){
 		string str = buf;
 		if ( str.length()>0 && str[0]=='#' ) continue;
+
 		N++;
 		vector<string> strs;
 		int i=-1, j=-1;		
@@ -592,17 +640,21 @@ void train(){
 			strs.push_back(t);
 			i = j;
 		}
+
 		label.push_back( atoi(strs[0].c_str()) );
 		D = strs.size() - 1;
 		vector<double> tmp;
 		for (int i=1; i<=D; i++){
+			if ( fl <= i && i <= fr )
 			tmp.push_back( atof(strs[i].c_str()) );
 		}
+		
 		x.push_back(tmp);
 	}
 	in.close();
 	delete []buf;
 
+	D = x[0].size();
 	/*
 	for (int i=0; i<3; i++){
 		cout<<label[i]<<endl;
@@ -613,14 +665,18 @@ void train(){
 	}*/
 	srand(19921031);
 	for (int i=0; i<N; i++){
+		
+		//if ( !(i>=0&&i<=200 || i>=650&&i<=850 || i>930) ) continue;
+		if ( label[i] == 3 ) continue;
+		if ( label[i] != 1 ) label[i] = -1;
 		//if ( rand()%10 <=  6 )
-		if ( i%100 >= 10 )
+		if ( i%200 > 150 )
 		{
-			test_label.push_back(  label[i] );
-			test_x.push_back(  x[i] );
-		}else{
 			train_label.push_back(  label[i] );
 			train_x.push_back(  x[i] );
+		}else{
+			test_label.push_back(  label[i] );
+			test_x.push_back(  x[i] );
 		}
 	}
 	
@@ -634,7 +690,7 @@ void train(){
 	cout<<"simple knn, accuracy is: "<<test_rate<<endl;
 	//nca_debug::wine_demo();
 
-	A = nca_solve( train_x, train_label, D, 100, 1 );
+	A = nca_solve( train_x, train_label, D, 5, 1 );
 	test_rate = nca_debug::test(train_x, train_label, test_x, test_label, A);
 	cout<<"after dml(NCA), accuracy is: "<<test_rate<<endl;
 

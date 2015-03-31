@@ -25,14 +25,16 @@ int main()
 
 	//checkallimg();
 
-	//generate_traindata();
+	//generate_negative_traindata(300);
 
-	//generate_negative_traindata(0);
-
+	//generate_traindata("anno_nasa.good", 0);
+	
 	//calc_train_feature();
 
+	
 	train();
 	
+
 	return 0;
 
 	// ¶ÁÈëÒ»ÕÅÍ¼Æ¬

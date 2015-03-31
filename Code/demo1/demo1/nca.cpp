@@ -32,6 +32,7 @@ namespace nca_debug{
 		return sum;
 	}
 	void addby(vector<double>&x, double c, const vector<double>&y){
+		assert( x.size()==y.size() );
 		for ( int i=x.size()-1; i>=0; i-- ){
 			x[i] += c*y[i];
 		}
@@ -116,6 +117,7 @@ namespace nca_debug{
 				p[i][j] = s[j] / fm;
 				if ( label[i] == label[j] ) {
 					P[i] += p[i][j];
+					///if( label[i]>0 )
 					F += p[i][j];
 				}
 			}
@@ -210,7 +212,9 @@ matrix2d Gradient1_fast(const matrix2d&x, const vector<int>&label, const matrix2
 	for (int i=0; i<N; i++){
 		for (int j=0; j<N; j++){
 			double cov = P[i]*p[i][j];			
-			if (  label[i] == label[j] ){
+			if (  label[i] == label[j] )
+			///if ( label[i]>0 )
+			{
 				cov -= p[i][j];
 			}
 			C[i][i] += cov;	C[j][j] += cov;
@@ -218,12 +222,13 @@ matrix2d Gradient1_fast(const matrix2d&x, const vector<int>&label, const matrix2
 		}
 	}
 	
-	matrix2d G = matrix2d(d, vector<double>(D,0) );
-	matrix2d Gi = G;
+	matrix2d G  = matrix2d(d, vector<double>(D,0) );
+	matrix2d Gi = matrix2d(d, vector<double>(D,0) );
+	
 	for (int i=0; i<N; i++){
-		vector<double> t(N,0);
+		vector<double> t(D,0);
 		for (int j=0; j<N; j++){
-			addby(t, C[i][j], x[j]);			
+			addby(t, C[i][j], x[j]);
 		}
 		for (int j=0; j<D; j++){
 			for (int k=0; k<D; k++){
@@ -241,7 +246,7 @@ matrix2d nca_solve1(const matrix2d&x, const vector<int>&label, int d, int iter, 
 {
 	assert( x.size() == label.size() );
 	assert( d>=1 && iter>=1 );
-
+	
 	int N = x.size();
 	int D = x[0].size();
 	vector< vector<double> > A = vector< vector<double> >(d, vector<double>(D,0) );
@@ -256,12 +261,11 @@ matrix2d nca_solve1(const matrix2d&x, const vector<int>&label, int d, int iter, 
 	//		cout<<"P["<<i<<"] = "<<P[i]<<" label: "<<label[i]<<endl;
 	//	}	
 		cout<<"F: "<<F<<" ";	//checked!
-		cout<<"test: "<<test(x, label, x, label, A)<<endl;
+		cout<<"test: "<<test(x, label, x, label, A)<<".  ";
 		//¼ÆËãÌÝ¶ÈG
 		//matrix2d G = Gradient1(x, label, A, p, P);
 		matrix2d G = Gradient1_fast(x, label, A, p, P);
 	
-
 //		for (int i=0; i<d; i++){
 //			for (int j=0; j<d; j++){
 //				cout<<G[i][j]<<" ";
@@ -294,7 +298,7 @@ matrix2d nca_solve1(const matrix2d&x, const vector<int>&label, int d, int iter, 
 			}
 		}
 
-		if ( F_best > F ){
+		if ( F_best > F+1e-5 ){
 			A = A_best;
 			F = F_best;
 			cout<<"F_new: "<<F<<" ";		
