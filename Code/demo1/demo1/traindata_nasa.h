@@ -54,22 +54,25 @@ public:
 	}
 	
 	//显示整幅图片，标注区域用矩形框标出来。按空格切换波段，按其他结束。
-	int show_with_board(){
-		if (!success) return -1;		
-		if (left<0 || left>src[0].cols || right<0 || right>src[0].cols || up<0 || up>src[0].rows || down<0 || down>src[0].rows) 
+	int show_with_board(int L=-1, int U=-1, int R=-1, int D=-1){
+		if ( -1 == L ){
+			L = left; R = right; U = up; D = down;
+		}
+		if (!success) return -1;
+		if (L<0 || L>src[0].cols || R<0 || R>src[0].cols || U<0 || U>src[0].rows || D<0 || D>src[0].rows) 
 			return -1;
 		while(1){
 			for (const Mat elem: src){
 				Mat t = elem.clone();
 				for ( int c=-8; c<8; c++ )
 				{
-					for ( int i=left; i<right; i++ ){
-						t.at<Vec3b>( up+c, i ) = Vec3b(255, 0, 0);
-						t.at<Vec3b>( down+c, i ) = Vec3b(255, 0, 0);
+					for ( int i=L; i<R; i++ ){
+						if ( 0<=U+c && U+c<t.rows ) t.at<Vec3b>( U+c, i ) = Vec3b(255, 0, 0);
+						if ( 0<=D+c && D+c<t.rows ) t.at<Vec3b>( D+c, i ) = Vec3b(255, 0, 0);
 					}
-					for ( int i=up; i<down; i++ ){
-						t.at<Vec3b>( i, left+c ) = Vec3b(255, 0, 0);
-						t.at<Vec3b>( i, right+c ) = Vec3b(255, 0, 0);
+					for ( int i=U; i<D; i++ ){
+						if ( 0<=L+c && L+c<t.cols ) t.at<Vec3b>( i, L+c ) = Vec3b(255, 0, 0);
+						if ( 0<=R+c && R+c<t.cols ) t.at<Vec3b>( i, R+c ) = Vec3b(255, 0, 0);
 					}
 				}
 				Mat dst;
@@ -233,6 +236,25 @@ public:
 			Mat t(src[i], Rect(left, up, right - left, down - up ) );
 			imwrite(filename.c_str() , t);
 		}
+	}
+
+	
+	vector<double> calc_feature(int L=-1, int U=-1, int R=-1, int D=-1){
+		if ( -1==L ){
+			L = 0; R = gray[0].cols;
+			U = 0; D = gray[0].rows;
+		}
+		vector<double> feature;
+		vector<double> res;
+		for (int i=0; i<9; i++){
+			Mat img( gray[i], Rect(L,U, R-L, D-U) );
+			res = get_ColorMoment_from_mat( img );
+			//res = get_Hist_from_mat( img );
+			for (double t : res) feature.push_back( t );
+			res = get_texture_from_mat( img );
+			for (double t : res) feature.push_back( t );
+		}
+		return feature;
 	}
 
 	string serialize(){
@@ -408,11 +430,11 @@ void generate_negative_traindata(int begin){
 
 	
 	ofstream good, bad;
-	good.open("anno_nasa.null.good", ios::app);
+	good.open("anno_nasa.again.good", ios::app);
 	vector<string> w;
 	string t_pre = "";
 	for (string t : work){
-		if ( t_pre.substr(0, 30) != t.substr(0, 30) ){
+		if ( t_pre.substr(0, 8) != t.substr(0, 8) ){
 			if ( t.find("#") == string::npos ){
 				w.push_back(t);
 			}
@@ -421,78 +443,14 @@ void generate_negative_traindata(int begin){
 	}
 	int N = w.size();
 	cout<<w.size()<<endl;
-	int p = 0, q = 0, r;
-	for (int i=begin; i<N; i++){
-		while ( p<(int)work.size() && work[p].substr(0,8)<w[i].substr(0,8) ) p++;
-		while ( q<(int)work.size() && work[q].substr(0,8)<=w[i].substr(0,8) ) q++;
-		r = p;
-		cout<<w[i].substr(0,17)<<endl;
 
-		AnnoFrame f;
-		//f.set("20110809_032451_4096_0094.jpg,20110809_032447_4096_0131.jpg,20110809_032425_4096_0171.jpg,20110809_032432_4096_0193.jpg,20110809_032450_4096_0211.jpg,20110809_032457_4096_0304.jpg,20110809_032453_4096_0335.jpg,20110809_032506_4096_1600.jpg,20110809_032520_4096_1700.jpg,Flare,586.0,552.0,1171.0,-71.0,");
-		f.set(w[i]);
-		f.read_img();
-		if ( !f.success ) continue;
-		int key = -1;
-		bool bk = false;
-		while ( key!='N' && key!='n' ){
-			bool isACR = false;
-			for (int j=p; j<q; j++){
-				int x[4] = {f.left, f.right, a[j].left, a[j].right};
-				int y[4] = {f.up, f.down, a[j].up, a[j].down };
-				set< pair<int,int> > s;
-				for (int u=0; u<4; u++){
-					for (int v=0; v<4; v++){
-						s.insert( make_pair(x[u], y[v]) );
-					}
-				}
-				int cnt = 0;
-				for (auto k : s){
-					if ( f.left<=k.first && k.first<=f.right && f.up<=k.second && k.second<=f.down
-					&& a[j].left<=k.first && k.first<=a[j].right && a[j].up<=k.second && k.second<=a[j].down ){
-						cnt++;
-					}
-				}
-				if (cnt>2) isACR = true;
-			}
-			if (isACR) cout<<"Warning, the region is active."<<endl;
-			else cout<<"The region is quiet."<<endl;
-			int dx=0, dy=0;
-			key = f.show_with_board();
-			//enter ESC
-			if ( 0x1B == key ) {
-				bk = true;
-				break;
-			}else if ( key=='c' || key=='C' ){
-				r++;
-				if (r>=q) r = r - q + p;
-				f.set( work[r] );
-				f.success = true;
-			}else if ( (key>>16)>=37 && (key>>16)<=40 ) {
-				switch (key>>16){
-					case 37:	dx = -(f.right-f.left)/2;	break;
-					case 38:	dy = -(f.down-f.up)/2;	break;
-					case 39:	dx = (f.right-f.left)/2;	break;
-					case 40:	dy = (f.down-f.up)/2;	break;
-				}
-			}
-			else if ( 13==key ){
-				f.concept = "null";
-				cout<<"Write a log: "<<f.serialize().substr(0,20)<<"..."<<endl;
-				good<<f.serialize()<<endl;
-			}
-			int left = f.left+dx, right = f.right+dx, up = f.up+dy, down = f.down+dy;
-			if (left<0 || left>4096 || right<0 || right>4096 || up<0 || up>4096 || down<0 || down>4096) continue;
-			else{
-				f.left = left, f.right = right, f.up = up, f.down = down;
-			}
-
+	for (int i=0; i<100; i++){
+		int p = -1;
+		for (int j=0; j<9; j++){
+			p = w[i].find(",", p+1) + 1;
 		}
-		if ( bk ) break;
-
-		
+		good<<w[i].substr(0, p)<<endl;
 	}
-
 
 	in.close();
 	good.close();
@@ -554,16 +512,21 @@ public:
 		}
 	}
 
-	void calc_feature(){
+	vector<double> calc_feature(int L=-1, int U=-1, int R=-1, int D=-1){
+		if ( -1==L ){
+			L = 0; R = gray[0].cols;
+			U = 0; D = gray[0].rows;
+		}
 		feature.clear();
 		vector<double> res;
 		for (int i=0; i<9; i++){
-			res = get_ColorMoment_from_mat( gray[i] );
+			Mat img( gray[i], Rect(L,U, R-L, D-U) );
+			res = get_ColorMoment_from_mat( img );
+			//res = get_Hist_from_mat( img );
 			for (double t : res) feature.push_back( t );
-			res = get_texture_from_mat( gray[i] );
+			res = get_texture_from_mat( img );
 			for (double t : res) feature.push_back( t );
 		}
-
 		/*
 		for (int i=0; i<9; i++){
 			for (int j=0; j<3+16; j++){
@@ -571,17 +534,17 @@ public:
 			}
 			cout<<endl;
 		}
-		*/
-
+		*/		
+		return feature;
 	}
 };
-string SunFrame::path = "..//..//..//data//TrainSet//img//";
+string SunFrame::path = "..//..//AnnotationSystem//AnnotationSystem//img//";
 
 void calc_train_feature(){
 	string path = "..//..//..//data//TrainSet//";
 	vector<string> w;
 	ifstream in;
-	in.open( path + "Annotation.txt" );
+	in.open( "Annotation.txt" );
 	char buf[10240];
 	while( in.getline(buf, 10240) ){
 		string t = buf;
@@ -590,37 +553,55 @@ void calc_train_feature(){
 	}
 	in.close();
 
+	w.clear();
+	w.push_back("Flare");
+	w.push_back("Coronal Hole");
+	w.push_back("Filament");
+	w.push_back("None");
+
 	ofstream os;
-	os.open( path + "data.txt" );
+	os.open( "data.txt" );
 	for ( string t : w ){
-		SunFrame s;
-		s.set(t);
-		s.read_img();
-		s.calc_feature();
-		
-		cout<<s.id<<endl;
+		int i= 0;
+		do{
+			stringstream ss;
+			ss<<++i;
+			string prefix = t + "//" + ss.str();
+			ss.clear();
+			SunFrame s;
+			s.set(prefix + ",20110824_162739_4096_0094.jpg,20110824_162811_4096_0131.jpg,20110824_162725_4096_0171.jpg,20110824_162732_4096_0193.jpg,20110824_162738_4096_0211.jpg,20110824_162821_4096_0304.jpg,20110824_162741_4096_0335.jpg,20110824_162818_4096_1600.jpg,20110824_162808_4096_1700.jpg,Coronal Hole,1576,3360,2088,3616,");
+			s.concept = t;
+			s.read_img();
+			if ( !s.success ) break;
+			s.calc_feature();
 
-		if ( s.concept == "Flare" ) os<<"1,";		
-		else if ( s.concept == "Coronal Hole" ) os<<"2,";
-		else if ( s.concept == "Sunspot" ) os<<"3,";
-		else if ( s.concept == "null" ) os<<"0,";
-		else continue;
-		for ( double f : s.feature ){
-			os<<f<<",";
-		}
-		os<<endl;
+			cout<<prefix<<endl;
 
+			if ( s.concept == "Flare" ) os<<"1,";		
+			else if ( s.concept == "Coronal Hole" ) os<<"2,";
+			else if ( s.concept == "Filament" ) os<<"3,";
+			else if ( s.concept == "None" ) os<<"0,";
+			else continue;
+			for ( double f : s.feature ){
+				os<<f<<",";
+			}
+			os<<endl;
+		}while( true );
 		//break;
 	}
 	os.close();
 	
 }
 
+
+void SystemTest(matrix2d train_x, vector<int> train_label, matrix2d A);
+
 void train(int fl=0, int fr=0x3f3f3f3f){
 	cout<<"using fl="<<fl<<" fr="<<fr<<endl;
 	string path = "..//..//..//data//TrainSet//";
 	ifstream in;
 	in.open( path + "data.txt" );
+	//in.open( "data.txt" );
 	
 	vector<int> label, train_label, test_label;
 	vector< vector<double> > x, train_x, test_x;
@@ -645,7 +626,7 @@ void train(int fl=0, int fr=0x3f3f3f3f){
 		D = strs.size() - 1;
 		vector<double> tmp;
 		for (int i=1; i<=D; i++){
-			if ( fl <= i && i <= fr )
+			if ( fl <= i && i < fr )
 			tmp.push_back( atof(strs[i].c_str()) );
 		}
 		
@@ -655,6 +636,7 @@ void train(int fl=0, int fr=0x3f3f3f3f){
 	delete []buf;
 
 	D = x[0].size();
+
 	/*
 	for (int i=0; i<3; i++){
 		cout<<label[i]<<endl;
@@ -667,14 +649,22 @@ void train(int fl=0, int fr=0x3f3f3f3f){
 	for (int i=0; i<N; i++){
 		
 		//if ( !(i>=0&&i<=200 || i>=650&&i<=850 || i>930) ) continue;
-		if ( label[i] == 3 ) continue;
-		if ( label[i] != 1 ) label[i] = -1;
+		//if ( label[i] == 3 ) continue;
+		//if ( label[i] != 1 ) label[i] = -1;
 		//if ( rand()%10 <=  6 )
-		if ( i%200 > 150 )
+	/*	if ( i<=218 || ( 684<=i && i<=802 ) || (925<=i && i<=1524)  )
 		{
 			train_label.push_back(  label[i] );
 			train_x.push_back(  x[i] );
-		}else{
+		}else if ( (546<=i&&i<646)||(848<=i&&i<897)||(1524<=i&&i<1746) ) {
+			test_label.push_back(  label[i] );
+			test_x.push_back(  x[i] );
+		}*/
+		if ( (i+1)%400 < 200  )
+		{
+			train_label.push_back(  label[i] );
+			train_x.push_back(  x[i] );
+		}else {
 			test_label.push_back(  label[i] );
 			test_x.push_back(  x[i] );
 		}
@@ -686,13 +676,151 @@ void train(int fl=0, int fr=0x3f3f3f3f){
 	vector< vector<double> > A = vector< vector<double> >(D, vector<double>(D, 0) );
 	for (int i=0; i<D; i++) A[i][i] = 1;
 
+
+
 	double test_rate = nca_debug::test(train_x, train_label, test_x, test_label, A);
 	cout<<"simple knn, accuracy is: "<<test_rate<<endl;
 	//nca_debug::wine_demo();
 
-	A = nca_solve( train_x, train_label, D, 5, 1 );
+	A = nca_solve( train_x, train_label, D, 0, 1 );
 	test_rate = nca_debug::test(train_x, train_label, test_x, test_label, A);
 	cout<<"after dml(NCA), accuracy is: "<<test_rate<<endl;
+	
+SystemTest(x, label, A);
+return ;
+	SystemTest(train_x, train_label, A);
+}
 
+//This is a demo code for lab.
+void SystemTest(matrix2d train_x, vector<int> train_label, matrix2d A){
+	
+	AnnoFrame s;
+	s.set("20110809_035539_4096_0094.jpg,20110809_035613_4096_0131.jpg,20110809_035537_4096_0171.jpg,20110809_035620_4096_0193.jpg,20110809_035616_4096_0211.jpg,20110809_035633_4096_0304.jpg,20110809_035617_4096_0335.jpg,20110809_035642_4096_1600.jpg,20110809_035632_4096_1700.jpg,Flare,-470.0,476.0,573.0,-174.0,");
+	s.read_img();
+
+
+	map<int,int> cnt_label;
+	map<int,double> dist;
+	for (int i=0; i<(int)train_x.size(); i++ ){
+		for (int j=0; j<(int)train_x.size(); j++){
+			if ( train_label[i] != train_label[j] ) continue;
+			cnt_label[ train_label[i] ]++;
+			dist[ train_label[i] ] += nca_debug::distance2( train_x[i], train_x[j] );
+		}
+	}
+	for ( auto &t : dist ){
+		t.second /= cnt_label[ t.first ];
+	}
+	int Cx = 2048, Cy = 2048;
+	for (int sz = 512; sz <= 1024; sz*=2){
+		for (int i=sz/2; i+sz<=4096; i+=sz){
+			for (int j=sz/2; j+sz<=4096; j+=sz){
+				Cx = i + sz/2, Cy = j + sz/2;
+				if ( (Cx-2048)*0.6*(Cx-2048)*0.6 + (Cy-2048)*0.6*(Cy-2048)*0.6 > 1000*1000  ) continue;
+
+				vector<double> feature;
+
+				feature = s.calc_feature(i, j, i+sz, j+sz);
+				
+				//feature = s.calc_feature(s.left, s.up, s.right, s.down );
+
+				//int label = nca_debug::classify_knn(train_x, train_label, feature);
+				int label = 0, best = -1;
+				map<int,int> cnt_tmp;
+				for (int k=0; k<(int)train_x.size(); k++){
+					if ( nca_debug::distance2(feature, train_x[k] ) < dist[ train_label[k] ] ){
+						int tmp = ++cnt_tmp[ train_label[k]];
+						if ( best < tmp ){
+							best = tmp;
+							label = train_label[k];
+						}
+					}
+				}
+
+				//for (double t : feature) cout<<t<<" ";	cout<<endl;
+				//cout<<"Concept: "<<label<<endl;
+				//s.show_with_board(s.left, s.up, s.right, s.down);
+				//for (int k=0; k<train_x.size(); k++){
+				//	if ( train_label[k] == 0 )
+				//	cout<<k<<" "<<nca_debug::distance2(train_x[k], feature)<<endl;
+				//}
+
+				//return ;
+
+				cout<<feature.size()<<endl;
+				//if ( label>0 ){
+					cout<<"Concept: "<<label<<"  position:("<<i<<","<<j<<")("<<i+sz<<","<<j+sz<<")"<<endl;					
+					int key = -1;
+					//key = s.show_with_board(i, j, i+sz, j+sz);
+					key = s.show_with_board(i, j, i+sz, j+sz);
+					if ( key == 0x1b ) return ;
+				//}
+			}
+		}
+	}
 
 }
+
+void _match(string imagename, string tempname, int method){	
+	Point matchLoc = Point(0,0);
+	double matchVal = 1e25;
+	Mat img = imread(imagename);
+	Mat temp = imread(tempname);
+	namedWindow("Match");
+	Mat dst;
+	resize(img, dst, Size(640, 640) );
+	imshow("Match", dst);
+	namedWindow("Template");
+	Mat sceen;
+	double scale = min( 300.0/temp.cols,  300.0/temp.rows );
+	resize(temp, sceen, Size(scale*temp.cols, scale*temp.rows) );
+	imshow("Template", sceen);
+
+	Rect roi = Rect(0,0,640,640);
+	while( min(temp.rows, temp.cols) > 50 ){
+		if ( max(temp.rows, temp.cols) <= 640 ){
+			Mat result;
+			matchTemplate(dst(roi), temp, result, CV_TM_SQDIFF_NORMED);
+			double minVal;
+			double maxVal;
+			Point minLoc;  
+			Point maxLoc;
+			minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc );
+			cout<<minVal<<" "<<maxVal<<endl;
+			if( ( method  != CV_TM_SQDIFF && method != CV_TM_SQDIFF_NORMED ) )
+			{
+				minVal = -maxVal;
+				minLoc = maxLoc;
+			}
+			if ( minVal < matchVal ){
+				matchVal = minVal;	
+				matchLoc += minLoc;
+				roi = Rect( matchLoc.x, matchLoc.y, temp.cols, temp.rows );
+			}
+		}
+		resize(temp, temp, Size(temp.cols * 0.5, temp.rows * 0.5) );
+	}
+	rectangle( dst, roi, Scalar::all(255), 2, 8, 0 );
+	imshow("Match", dst);
+		
+	waitKey();
+}
+
+void match(){
+
+	for (int id = 1; id <= 42; id ++ ){
+		//Mat img = imread("..//..//..//data//regional annotation//img//20110809_032425_4096_0171.jpg");
+		//"..//..//..//data//regional annotation//img//20110809_042527_4096_0211.jpg"
+		stringstream ID;
+		ID<<id;
+		string concept = "Coronal Hole";
+		concept = "Flare";
+		string imagename = "..//..//..//data//regional annotation//img//20110809_032425_4096_0171.jpg";
+		imagename = "..//..//..//data//regional annotation//img//20120711_083013_4096_0171.jpg";
+		imagename = "..//..//..//data//regional annotation//img//20120123_014150_4096_0211.jpg";
+		string tempname = "..//..//AnnotationSystem//AnnotationSystem//img//" + concept + "//" + ID.str() + "//0211.jpg";
+		_match(imagename, tempname, CV_TM_SQDIFF_NORMED);
+
+	}
+}
+

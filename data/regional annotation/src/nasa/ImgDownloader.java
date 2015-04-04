@@ -268,20 +268,49 @@ public class ImgDownloader {
 					t.hit += p.area * weight;
 				}
 			}
-
+			
+			for (SunFrame t : sunFrames){
+				t.hit = t.exist()?1:0;			
+			}
 			Collections.sort( sunFrames,new Comparator<SunFrame>(){
 	            public int compare(SunFrame x, SunFrame y) {
-	                return ( x.hit > y.hit ? -1 : x.hit < y.hit ? 1 : 0);
-	            }
-	        });
+	                //return ( x.hit > y.hit ? -1 : x.hit < y.hit ? 1 : 0);
+	            	if ( x.hit != y.hit ) return ( x.hit > y.hit ? -1 : x.hit < y.hit ? 1 : 0);
+	            	else return x.starttime.compareTo( y.starttime );
+	            }	        
+			});
+			
 			
 			int cnt = 0;
+			HashSet<String> hs = new HashSet<String>();	
+			int needcnt = 0;
 			for (SunFrame t : sunFrames){
-				if ( t.hit <= 0 ) break;
-				if ( ++cnt >= 65 ) break;
+				//if ( t.hit <= 0 ) break;
+				//if ( ++cnt >= 65 ) break;
+				if ( hs.contains( t.names[0].substring(0, 8) ) ) continue;
+				hs.add( t.names[0].substring(0, 8) );
 				ret.add( t );
+				cnt++;
+				needcnt += t.hit;
+				if (cnt > N) break;
 			}
-			System.out.println("need " + cnt + " pictures.");
+			Collections.sort( ret,new Comparator<SunFrame>(){
+	            public int compare(SunFrame x, SunFrame y) {
+	            	return x.names[0].compareTo( y.names[0] );
+	            }
+			});
+			writeFile("ImageNameByDay.txt", "#This file recodes a set of multi-wave image names\n", false);
+			for ( SunFrame t : ret ){
+				StringBuffer sb = new StringBuffer();
+				for (int i=0; i<9; i++){
+					sb.append(t.names[i]);
+					if( i+1<9 ) sb.append(",");
+					else sb.append("\n");
+				}
+				System.out.print(sb);
+				writeFile("ImageNameByDay.txt", sb.toString(), true);
+			}
+			System.out.println("need " + needcnt + " pictures.");
 //			for (SunFrame t : ret){
 //				 System.out.println( t.starttime + " " + t.hit );
 //			}
@@ -450,9 +479,11 @@ public class ImgDownloader {
 		
 		t.get_all_filename(120);
 		
-		//t.Downloadimg(120);
+		//t.get_need_img(480);
 		
-		t.saveAnnotation();
+		t.Downloadimg(480);
+		
+		//t.saveAnnotation();
 
 	}
 	

@@ -136,7 +136,7 @@ namespace nca_debug{
 		}
 		return max_element( score.begin(), score.end() ) - score.begin();
 	}	
-	int classify_knn(const matrix2d&train_x, const vector<int>&train_label, const vector<double>&x, const matrix2d&A = matrix2d() ){
+	int classify_knn(const matrix2d&train_x, const vector<int>&train_label, const vector<double>&x, const matrix2d&A ){
 		bool useEuclidean = A.empty();
 		int N = train_x.size();
 		vector< pair<double,int> > dist(N);
@@ -165,13 +165,30 @@ namespace nca_debug{
 
 	double test(const matrix2d&train_x_origin, const vector<int>&train_label,
 		const matrix2d&test_x_origin, const vector<int>&test_label, const matrix2d&A){
+
+		map< int, map<int,int> > mat;
+
 		matrix2d train_x = project(train_x_origin, A);
 		matrix2d test_x = project(test_x_origin, A);
 		int right = 0;
 		int M = test_x.size();
 		for (int i=0; i<M; i++){
-			if ( classify_knn(train_x, train_label, test_x[i] ) == test_label[i] ) right++;
+			int res = classify_knn(train_x, train_label, test_x[i] );
+			if ( res == test_label[i] ) right++;
+			mat[ test_label[i] ][ res ]++;
 		}
+
+		if( train_x_origin.size() != test_x_origin.size() ){
+			cout<<endl;
+			for ( int i=0; i<4; i++ ){
+				for ( int j=0; j<4; j++ ){
+					cout<<mat[i][j]<<" ";
+				}
+				cout<<endl;
+			}
+			cout<<endl;
+		}
+
 		return (double)right/M;
 	}
 

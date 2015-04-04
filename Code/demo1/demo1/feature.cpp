@@ -35,6 +35,24 @@ Mat read_jpg_to_gray_mat(const char* filename)
 	return ret;
 }
 
+vector<double> get_Hist_from_mat(const Mat &img){
+	vector<double>cnt(256,0);
+	double sum = 0;
+	for (int i=0; i<img.cols; i++){
+		for (int j=0; j<img.rows; j++){
+			int k = img.at<uchar>(j, i);
+			cnt[k] += 1.0;
+		}
+	}
+	for (int i=0; i<256; i++){
+		sum += cnt[i];
+	}
+	for (int i=0; i<256; i++){
+		cnt[i] = cnt[i] / sum * 256;
+	}
+	return cnt;
+}
+
 vector<double> get_ColorMoment_from_mat(const Mat &img)
 {
 	vector<double> cm(3,0);
