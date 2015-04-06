@@ -1,10 +1,10 @@
-%% LMNN Demo
-%
-% This demo tests various flavors of LMNN
+%% LMNN+Fisher Demo
 %% Initialize path anc clear screen
 clear
+clc
 close all
 
+addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\Fisher';
 %% Load data 
 %Mt = csvread('../../demo1/demo1/data.txt');
 Mt = csvread('../../../data/TrainSet/data2.txt');
@@ -12,7 +12,7 @@ Mt = csvread('../../../data/TrainSet/data2.txt');
 [N, D] = size(Mt);
 D = D-2;
 
-D = 255;
+D = 40;
 
 train_i = 0;
 test_i = 0;
@@ -45,12 +45,19 @@ disp( [ 'fisher正确率', num2str(sum(yp == test_label)/size(test_label,1) ) ] );
 
 %% lmnn
 cd '../lmnn';
+%install;
+setpaths;
 knn=3;  % we are optimizing ver the knn=3 nearest neighbors classifier
 disp(['Automatic tuning of LMNN parameters for ' num2str(knn) '-NN classification.']); 
 
 xTr = train'; yTr = train_label';
 xTe = test'; yTe = test_label';
 L0=pca(xTr)';
+
+[w,b] = fisherbcl(train*L0(1:2, :)', train_label);
+yp = test*L0(1:2, :)'*w + b < 0;
+disp( [ 'after pca, fisher正确率', num2str(sum(yp == test_label)/size(test_label,1) ) ] );
+
 [L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',1000,'quiet',1,'outdim',3,'mu',0.5,'validation',0.2,'earlystopping',25,'subsample',0.3);
 
 cd '../fisher';

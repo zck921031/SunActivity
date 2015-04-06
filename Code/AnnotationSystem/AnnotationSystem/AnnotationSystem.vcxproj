@@ -73,7 +73,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnnotationSystem.h" />
+    <ClInclude Include="Feature.h" />
     <ClInclude Include="Frame.h" />
+    <ClInclude Include="Recognition.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SplitImage.h" />
     <ClInclude Include="stdafx.h" />

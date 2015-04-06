@@ -3,6 +3,10 @@
 #include "stdafx.h"
 #include "AnnotationSystem.h"
 #include "SplitImage.h"
+#include "Feature.h"
+#include "Recognition.h"
+
+
 
 void test(){
 	Region r1(100,500,200,550);
@@ -42,13 +46,16 @@ int main(){
 	test();
 	cout<<"hello world"<<endl;
 
-	//AnnotationGui t;
-	//t.start(19);
+	AnnotationGui t;
+	t.start(70);
 
-	SplitImage si;
+	//SplitImage si;
 	//si.work();
 
-	//system("pause");
+	//Reco reco;
+	//reco.ReadFeatureFromTxt();
+
+	system("pause");
 
 	return 0;
 }

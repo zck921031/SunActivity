@@ -4,7 +4,7 @@
 #include "Region.h"
 #include "Frame.h"
 #include "stdafx.h"
-
+#include "Recognition.h"
 
 void onMouse1(int event,int x,int y,int flags, void* _r );
 void onMouse2(int event,int x,int y,int flags, void* _r );
@@ -18,7 +18,10 @@ public:
 	string cmd;
 	Mat img[9];
 	FrameBase fb;
-	Region region;
+	Region region;	
+	Reco reco;
+	vector<Rect> recognition_result;
+	//reco.ReadFeatureFromTxt();
 	void putButton(Region r){
 		rectangle(sceen, Point(r.left, r.up), Point(r.right, r.down), Scalar(255,0,0));		
 		putText( sceen, r.concept.substr(0,8), Point(r.left, r.down-5),CV_FONT_HERSHEY_COMPLEX, 0.8, Scalar(255, 0, 0) );
@@ -39,7 +42,7 @@ public:
 		button[3].concept = "None";
 
 		button[4] = Region(130, 80, 130+W, 80+H);
-		button[4].concept = "Cmd";
+		button[4].concept = "NoFlare";
 
 		button[5] = Region(250, 80, 250+W, 80+H);
 		button[5].concept = "Confirm";
@@ -69,7 +72,15 @@ public:
 		//cout<<wave<<endl;
 		rectangle(sceen, Point(region.left/8, region.up/8), Point(region.right/8, region.down/8), Scalar(0,0,255));
 		for ( Region r : fb.annotations  ){
-			rectangle(sceen, Point(r.left/8, r.up/8), Point(r.right/8, r.down/8), Scalar(255,0,0));	
+			Scalar color =Scalar(0,0,255);
+			if ( r.concept != "Flare" ){
+				color = Scalar(255,0,0);
+			}
+			rectangle(sceen, Point(r.left/8, r.up/8), Point(r.right/8, r.down/8), color );	
+		}
+		
+		for ( Rect t : recognition_result ){
+			rectangle(sceen, t,  Scalar(255,255,0) );
 		}
 
 		imshow("Sun", sceen );
@@ -85,6 +96,12 @@ public:
 			resize(fb.src[i], img[i], Size( (int)(scale*fb.src[i].cols), (int)(scale*fb.src[i].rows) ) );
 		}
 		cmd = "";
+		
+		region.left = 0;
+		region.right = 0;
+		region.up = 0;
+		region.down = 0;
+		recognition_result = reco.recognition( fb.gray );
 	}
 
 	void start(int DAY = 0){
@@ -95,7 +112,8 @@ public:
 			}
 		}
 		
-	
+		reco.ReadFeatureFromTxt();
+
 		initButton();
 
 	
@@ -149,7 +167,7 @@ void onMouse1(int event,int x,int y,int flags, void* _r ){
 			if ( p->button[i].contain_point(x,y) )
 			{
 				cout<<c<<endl;
-				if ( i<=3 ) p->region.concept = c;
+				if ( i<=4 ) p->region.concept = c;
 				if ( c=="Pre" ){
 					p->save();
 					p->day = max(p->day-1, 0);
@@ -165,8 +183,16 @@ void onMouse1(int event,int x,int y,int flags, void* _r ){
 					if ( p->region.concept == "" ){
 						cout<<"miss concept, forget?"<<endl;
 					}else{
+						
+
 						if ( p->region.left > p->region.right ) swap(p->region.left, p->region.right);
 						if ( p->region.up > p->region.down ) swap(p->region.up, p->region.down);
+						
+						p->reco.add( p->fb.gray, p->region.concept, 
+							Rect( p->region.left, p->region.up, 
+								p->region.right - p->region.left - 1, p->region.down - p->region.up - 1 ) );
+						//continue;
+
 						p->fb.annotations.push_back( p->region );
 						p->imgnames[p->day] = p->fb.serialize();
 						cout<<p->region.serialize()<<endl;

@@ -1,12 +1,13 @@
 %Input: image
 %Output: vector in feature space
 function Vec = FeatureExtraction(Image) 
-    addpath 'Color';
-    addpath 'CoMatrix';
-    addpath( genpath( pwd ) );
+    addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\FeatureExtraction\Color';
+    addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\FeatureExtraction\CoMatrix';
     
-    %Hist = grayHistogram(Image);
-    %CoMat = CoMatrixFeature(Image);
+    Image = myfilter(Image);
+    Hist = grayHistogram(Image);
+    CoMat = CoMatrixFeature(Image);
+    
     %Flare None Coronal Hole
     %Image = imread( ['../../AnnotationSystem/AnnotationSystem/img/', 'Coronal Hole' , '/', '1', '/0211.jpg'] );
     
@@ -25,11 +26,12 @@ function Vec = FeatureExtraction(Image)
 %     figure(3);
 %     imshow( M*16 );
 
-    [~,~,GB] = gaborfilter( rgb2gray(Image), 6, 90, 0.5, 0.5);
+%     [~,~,GB] = gaborfilter( rgb2gray(Image), 6, 90, 0.5, 0.5);
+%     
+%     imshow( uint8(GB) );
+%     
+%     GB = imhist( uint8(GB) )';
+%     GB = GB / sum(GB);
     
-    imshow( uint8(GB) );
-    
-    GB = imhist( uint8(GB) )';
-    GB = GB / sum(GB);
-    Vec = GB;
+    Vec = [Hist, CoMat];
 end

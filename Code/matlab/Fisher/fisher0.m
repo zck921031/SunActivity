@@ -32,4 +32,8 @@ function [w, b] = fisher0(data, label)
     ave_m1 = w'*m1;
     ave_m2 = w'*m2;
     b = -(ave_m1+ave_m2)/2;
+    
+    
+    yp = (data*w+b) < 0;
+    disp( [ 'fisherÕýÈ·ÂÊ' , num2str(sum(yp == label)/N) ] );
 end

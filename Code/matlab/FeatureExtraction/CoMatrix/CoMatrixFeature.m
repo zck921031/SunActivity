@@ -2,7 +2,7 @@ function ret = CoMatrixFeature(image)
     ret = [];
     if( size(image,3) > 1 )
         img = rgb2gray(image);
-    else        
+    else
         img = image;
     end
     dx = [ 0, -4, -4, -4];
