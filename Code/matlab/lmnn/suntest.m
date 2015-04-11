@@ -4,7 +4,7 @@
 %% Initialize path anc clear screen
 clear
 close all
-install;
+%install;
 setpaths;
 figh=figure ('Name','PCA');
 clc;
@@ -12,9 +12,16 @@ rand('seed',1);
 
 %% Load data 
 %load data/segment.mat;
-Mt = csvread('data2.txt');
+Mt = csvread('C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\AnnotationSystem\data.txt');
+seq = find( abs( Mt(:,1) )==1 );
+Mt = Mt(seq, :);
+
 [N, D] = size(Mt);
-D = D-2;
+D = D-1;
+seqD = [1, 2+16*1 : 1+16*6];
+Mt = Mt(:, seqD);D=size(Mt,2)-1;
+
+%D = 32;
 
 train_i = 0;
 test_i = 0;
@@ -24,10 +31,11 @@ test = [];
 test_label = [];
 for i=1:N
     %二分类
-    %if ( Mt(i,1)~=1 ) 
-    %    Mt(i,1)=-1;
-    %end
-    if ( 1<=i&&i<=20 || 63<=i&&i<=77 || 102<=i&&i<=108 || 138<=i&&i<=168 )
+    if ( Mt(i,1)~=1 ) 
+        Mt(i,1)=0;
+    end
+    if i <= 600
+    %if ( 1<=i&&i<=20 || 63<=i&&i<=77 || 102<=i&&i<=108 || 138<=i&&i<=168 )
         %(i<=218 || 684<=i&&i<=802 || 925<=i&&i<=1524 )
         train_i = train_i+1;
         train( train_i , :) = Mt(i, 2:D+1);
@@ -41,8 +49,8 @@ for i=1:N
     end
 end%将原始数据分为train集和test集
 wave = 1;
-xTr = train(:, (256+16)*(wave-1)+1:(256+16)*9)'; yTr = train_label';
-xTe = test (:, (256+16)*(wave-1)+1:(256+16)*9)'; yTe = test_label';
+xTr = train(:, :)'; yTr = train_label';
+xTe = test (:, :)'; yTe = test_label';
 
 
 %% KNN classification error before metric learning  
@@ -104,6 +112,7 @@ title(['GB-LMNN Test (Error: ' num2str(100*errGL(2),3) '%)'])
 noticks;box on;
 drawnow
 
+
 %% Final Results
 disp('Dimensionality Reduction Demo:');
 disp(['Under wave: ', num2str(wave)]);
@@ -111,3 +120,13 @@ disp(['1-NN Error for raw聽(high dimensional) input is : ',num2str(100*errRAW(2)
 disp(['1-NN Error after PCA in 3d is : ',num2str(100*errPCA(2),3),'%']);
 disp(['1-NN Error after LMNN in 3d is : ',num2str(100*errL(2),3),'%']);
 disp(['1-NN Error after gbLMNN in 3d is : ',num2str(100*errGL(2),3),'%']);
+
+addpath('../fisher');
+
+[w, b] = fisherbcl( train, uint8(train_label) );
+disp( [ 'Raw, fisher测试正确率' , num2str(sum( ( ( test*w+b) < 0 ) == test_label )/(size(test,1) ) ) ] );
+
+[w, b] = fisherbcl( train*L', uint8(train_label) );
+disp( [ 'After lmnn, fisher测试正确率' , num2str(sum( ( ( test*L'*w+b) < 0 ) == test_label )/(size(test,1) ) ) ] );
+
+

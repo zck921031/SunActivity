@@ -34,4 +34,5 @@ function Vec = FeatureExtraction(Image)
 %     GB = GB / sum(GB);
     
     Vec = [Hist, CoMat];
+    Vec = Hist*256;
 end

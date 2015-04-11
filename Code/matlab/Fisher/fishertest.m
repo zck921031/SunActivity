@@ -6,10 +6,10 @@ X1 = normrnd(50,10,[200,1]);
 Y1 = normrnd(50,10,[200,1]);
 L1 = zeros(200,1);
 x1=[X1, Y1];
-X2 = normrnd(5 ,30,[200,1]);
-Y2 = normrnd(0 ,30,[200,1]);
+X2 = normrnd(5 , 10,[100,1]);
+Y2 = normrnd(0 , 10,[100,1]);
 x2=[X2, Y2];
-L2 = ones(200,1);
+L2 = ones(100,1);
 data = [x1;x2];
 label = [L1; L2];
 

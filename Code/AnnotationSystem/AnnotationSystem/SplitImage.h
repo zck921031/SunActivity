@@ -21,6 +21,8 @@ public:
 		delete []buf;
 
 		
+		ofstream outexp;
+		outexp.open("img//source.txt");
 		_mkdir("img");
 		map<string, int> cnt;
 		for (string w : imgnames ){
@@ -44,7 +46,15 @@ public:
 					filename += "//" + fb.names[i].substr(21, 4) + ".jpg";
 					imwrite(filename, img);
 				}
+				
+				outexp<<r.concept<<" "<<id;
+				for (int j=0; j<9; j++){
+					outexp<<" "<<fb.names[j];
+				}
+				outexp<<endl;
+
 			}
 		}
+		outexp.close();
 	}
 };

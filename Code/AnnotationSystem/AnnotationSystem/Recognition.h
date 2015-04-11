@@ -33,7 +33,7 @@ public:
 		}
 		delete []buf;
 		in.close();
-		cout<<"Read feature from txt: "<<xT.size()<<" "<<yT.size()<<" "<<xT[0].size()<<endl;
+		//cout<<"Read feature from txt: data size: "<<xT.size()<<" label size: "<<yT.size()<<" dim: "<<xT[0].size()<<endl;
 	}
 
 	void GenFeatureToTxt(){

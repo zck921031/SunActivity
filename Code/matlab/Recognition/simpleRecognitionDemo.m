@@ -2,19 +2,41 @@
 clc;
 clear all;
 close all;
-addpath('../FeatureExtraction');
+%addpath('../FeatureExtraction');
+addpath('../Fisher');
 %% Load: data, label
-load train.mat;
+%load data.mat;
+Mt = csvread('C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\AnnotationSystem\data.txt');
+seq = find( abs( Mt(:,1) )==1 );
+Mt = Mt(seq, :);
+[N, D] = size(Mt);
+D = D-1;
 
-wavecnt = 2;
-%% simpleTrainAlgorithm
-label = (label ~= 1);
-data = data(:, 1:32*wavecnt);
-seq = randperm(195);
-K = 195;
-[w, b] = fisherbcl2( data( seq(1:K), : ), label( seq(1:K) ) );
-%yp = ( data( seq(K+1:195), : ) *w+b) < 0;
-%disp( [ 'fisher训练正确率' , num2str(sum(yp == label(seq(K+1:195)) )/(195-K) ) ] );
+train_i = 0;
+test_i = 0;
+train = [];
+train_label = [];
+test = [];
+test_label = [];
+for i=1:N
+    %二分类
+    if ( Mt(i,1)~=1 ) 
+        Mt(i,1)=0;
+    end
+    if i <= 900
+    %if ( 1<=i&&i<=20 || 63<=i&&i<=77 || 102<=i&&i<=108 || 138<=i&&i<=168 )
+        %(i<=218 || 684<=i&&i<=802 || 925<=i&&i<=1524 )
+        train_i = train_i+1;
+        train( train_i , :) = Mt(i, 2:D+1);
+        train_label( train_i , 1) = Mt(i, 1);
+    else
+        %if ( 546<=i&&i<=646 || 848<=i&&i<=897 || 1544<=i&&i<=1746 )
+        test_i = test_i+1;
+        test(test_i, :) = Mt(i, 2:D+1);
+        test_label(test_i,1) = Mt(i, 1);
+        %end
+    end
+end%将原始数据分为train集和test集
 
 
 %% Read a image
@@ -23,6 +45,7 @@ imagenames = {'20110809_032451_4096_0094.jpg', '20110809_032447_4096_0131.jpg', 
     '20110809_032506_4096_1600.jpg', '20110809_032520_4096_1700.jpg'};
 
 %C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\AnnotationSystem\img\None\93
+wavecnt = 9;
 
 images = {};
 for k = 1 : wavecnt
@@ -37,39 +60,34 @@ setpaths;
 knn=3;  % we are optimizing ver the knn=3 nearest neighbors classifier
 disp(['Automatic tuning of LMNN parameters for ' num2str(knn) '-NN classification.']); 
 
-xTr = data'; yTr = label';
-%xTe = test'; yTe = test_label';
+xTr = train'; yTr = train_label';
+xTe = test'; yTe = test_label';
 L0=pca(xTr)';
 
-[L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',1000,'quiet',1,'outdim',3,'mu',1.0,'validation',0.2,'earlystopping',25,'subsample',1.0);
+[L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',1000,'quiet',1,'outdim',3,'mu',0.5,'validation',0.2,'earlystopping',25,'subsample',0.3);
 
-
-subplot(1,2,1);
-scat(L0*xTr,3,yTr);
-title('PCA Training');
-noticks;box on;
-subplot(1,2,2);
-scat(L0*xTr,3,yTr);
 
 %% fisher
-data = data*L';
+%data = data*L';
 cd '../fisher';
-[w,b] = fisherbcl(data, label);
+[w,b] = fisherbcl(train*L', train_label);
 
 %% Test 
 figure(2);
-imshow(images{wavecnt});
-for i = 768 : 512 : 2816
-for j = 768 : 512 : 2816-512*2
+imshow(images{3});
+for i = 768 : 256 : 3500
+for j = 768 : 256 : 3500
     x = [];
     for k = 1 : wavecnt
-        image = images{k}(i:i+512, j:j+512,:);
+        image = images{k}(j:j+256, i:i+256,:);
         x = [x, FeatureExtraction(image)];    
     end
     cl = x*L'*w + b;
     [i, j, cl]
     if ( cl < 0  )
-        rectangle('Position',[i,j, 512, 512]);
+        rectangle('Position',[i,j, 256, 256],'edgecolor','y');
+    else
+        rectangle('Position',[i,j, 256, 256],'edgecolor','b')
     end
 end
 end

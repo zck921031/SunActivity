@@ -75,6 +75,7 @@
     <ClInclude Include="AnnotationSystem.h" />
     <ClInclude Include="Feature.h" />
     <ClInclude Include="Frame.h" />
+    <ClInclude Include="lmsal.h" />
     <ClInclude Include="Recognition.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SplitImage.h" />

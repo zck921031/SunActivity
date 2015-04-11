@@ -47,12 +47,13 @@ int main(){
 	cout<<"hello world"<<endl;
 
 	AnnotationGui t;
-	t.start(70);
+	t.start(3);
 
-	//SplitImage si;
-	//si.work();
+	SplitImage si;
+	si.work();
 
 	//Reco reco;
+	//reco.GenFeatureToTxt();
 	//reco.ReadFeatureFromTxt();
 
 	system("pause");

@@ -5,9 +5,12 @@
 #include "Frame.h"
 #include "stdafx.h"
 #include "Recognition.h"
+#include "lmsal.h"
 
 void onMouse1(int event,int x,int y,int flags, void* _r );
 void onMouse2(int event,int x,int y,int flags, void* _r );
+
+
 
 class AnnotationGui{
 public:
@@ -21,6 +24,7 @@ public:
 	Region region;	
 	Reco reco;
 	vector<Rect> recognition_result;
+	Lmsal lmsal;
 	//reco.ReadFeatureFromTxt();
 	void putButton(Region r){
 		rectangle(sceen, Point(r.left, r.up), Point(r.right, r.down), Scalar(255,0,0));		
@@ -82,6 +86,11 @@ public:
 		for ( Rect t : recognition_result ){
 			rectangle(sceen, t,  Scalar(255,255,0) );
 		}
+		for ( Rect t : lmsal.res ){
+			rectangle(sceen, Rect(t.x/8, t.y/8, t.width/8, t.height/8 ),  Scalar(0,255,255) );
+			//cout<<t<<endl;
+		}
+
 
 		imshow("Sun", sceen );
 		
@@ -97,11 +106,14 @@ public:
 		}
 		cmd = "";
 		
+		//简单识别
 		region.left = 0;
 		region.right = 0;
 		region.up = 0;
 		region.down = 0;
 		recognition_result = reco.recognition( fb.gray );
+		//读标注
+		lmsal.find( imgnames[day], "Flare" );
 	}
 
 	void start(int DAY = 0){
@@ -111,9 +123,12 @@ public:
 				sceen.at<Vec3b>(j,i) = Vec3b(255, 255, 255);
 			}
 		}
-		
+		//加载已学习的特征
 		reco.ReadFeatureFromTxt();
-
+		//加载lmsal标注
+		lmsal.read_annotation_from_txt("..//..//demo1//demo1//lmsal.txt");
+		
+		//gui初始化
 		initButton();
 
 	
@@ -223,3 +238,4 @@ void onMouse2(int event,int x,int y,int flags, void* _r ){
 	}
 
 }
+
