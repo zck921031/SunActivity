@@ -46,17 +46,22 @@ int main(){
 	test();
 	cout<<"hello world"<<endl;
 
-	AnnotationGui t;
-	t.start(3);
+	//AnnotationGui t;
+	//t.start(3);
 
-	SplitImage si;
-	si.work();
+	//SplitImage si;
+	//si.work();
 
 	//Reco reco;
 	//reco.GenFeatureToTxt();
 	//reco.ReadFeatureFromTxt();
 
-	system("pause");
+	//__LBP::test();
+
+	//__SIFT_BOW::teddytest();
+	
+
+	//system("pause");
 
 	return 0;
 }

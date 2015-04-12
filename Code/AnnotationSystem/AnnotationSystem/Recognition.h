@@ -64,7 +64,7 @@ public:
 				for (int i=0; i<9; i++){
 					img = Mat( fb.gray[i], Rect(r.left, r.up, r.right-r.left, r.down-r.up) );
 					vector<double> res;
-					res = Hist(img);
+					res = ColorHist(img);
 					for ( double t : res ) x.push_back(t);
 					//Mat sceen;
 					//resize(fb.gray[i], sceen, Size(512,512) );
@@ -88,7 +88,7 @@ public:
 		vector<double> x;
 		for (int k=0; k<9; k++){
 			Mat img = Mat(gray[k], r );
-			vector<double> res = Hist(img );
+			vector<double> res = ColorHist(img );
 			for ( double t : res ) x.push_back(t);			
 		}
 		add(concept, x, true);
@@ -147,7 +147,7 @@ public:
 			vector<double> x;
 			for (int k=0; k<9; k++){
 				Mat img = Mat(gray[k], Rect(i,j,size,size) );
-				vector<double> res = Hist(img );
+				vector<double> res = ColorHist(img );
 				for ( double t : res ) x.push_back(t);				
 			}
 			int cl = classify(x);

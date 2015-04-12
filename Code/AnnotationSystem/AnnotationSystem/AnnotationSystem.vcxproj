@@ -68,16 +68,18 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opencv_core249.lib;opencv_imgproc249.lib;opencv_highgui249.lib;opencv_ml249.lib;opencv_video249.lib;opencv_features2d249.lib;opencv_calib3d249.lib;opencv_objdetect249.lib;opencv_contrib249.lib;opencv_legacy249.lib;opencv_flann249.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core249.lib;opencv_imgproc249.lib;opencv_highgui249.lib;opencv_ml249.lib;opencv_video249.lib;opencv_features2d249.lib;opencv_calib3d249.lib;opencv_objdetect249.lib;opencv_contrib249.lib;opencv_legacy249.lib;opencv_flann249.lib;opencv_nonfree249.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnnotationSystem.h" />
     <ClInclude Include="Feature.h" />
     <ClInclude Include="Frame.h" />
+    <ClInclude Include="lbp.h" />
     <ClInclude Include="lmsal.h" />
     <ClInclude Include="Recognition.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="sift_bow.h" />
     <ClInclude Include="SplitImage.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="FrameBase.h" />

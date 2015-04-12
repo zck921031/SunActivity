@@ -41,6 +41,12 @@
     <ClInclude Include="lmsal.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="lbp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sift_bow.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

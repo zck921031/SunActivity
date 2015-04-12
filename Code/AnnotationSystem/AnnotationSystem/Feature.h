@@ -1,8 +1,10 @@
 #pragma once
 
 #include "stdafx.h"
+#include "lbp.h"
+#include "sift_bow.h"
 
-vector<double> Hist(const Mat &img, int N = 16){
+vector<double> ColorHist(const Mat &img, int N = 16){
 	vector<double>cnt(256/N,0);
 	double sum = 0;
 	for (int i=0; i<img.cols; i++){
