@@ -24,7 +24,7 @@
 using namespace cv;
 using namespace std;
 
-
+const string WaveNames[] = {"0094","0131","0171","0193","0211","0304","0335","1600","1700"};
 
 vector<string> SplitStringByChar( string str, char c ){
 	vector<string> ret;
@@ -66,3 +66,10 @@ void LmsalAxis2CvAxis(TP &left, TP &up, TP &right, TP &down, double Size=4096)
 	down =  (int)(-down/0.6 + Size/2);
 }
 
+Mat load_image(string filename){
+	Mat img = imread( filename.c_str() );
+	Mat gray;
+	cvtColor(img, gray, CV_BGR2GRAY);
+	medianBlur( gray, gray, 9);
+	return gray;
+}

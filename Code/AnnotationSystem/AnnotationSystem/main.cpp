@@ -60,8 +60,9 @@ int main(){
 
 	//__SIFT_BOW::teddytest();
 	
+	genFeature();
 
-	//system("pause");
+	system("pause");
 
 	return 0;
 }

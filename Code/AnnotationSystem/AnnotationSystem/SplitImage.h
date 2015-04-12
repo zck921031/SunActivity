@@ -33,6 +33,12 @@ public:
 			fb.read_image();
 			Mat img;
 			for ( Region r : fb.annotations ){
+				int skip = false;
+				for (int i=0; i<9; i++){
+					if ( fb.names[i].substr(21, 4) != WaveNames[i] ) skip = true;
+					if ( !fb.src[i].data ) skip = true;
+				}
+				if ( skip ) continue;
 				int id = ++cnt[ r.concept ];
 				for (int i=0; i<9; i++){
 					img = Mat( fb.src[i], Rect(r.left, r.up, r.right-r.left, r.down-r.up) );
@@ -52,7 +58,7 @@ public:
 					outexp<<" "<<fb.names[j];
 				}
 				outexp<<endl;
-
+				cout<<r.concept<<" "<<id<<endl;
 			}
 		}
 		outexp.close();
