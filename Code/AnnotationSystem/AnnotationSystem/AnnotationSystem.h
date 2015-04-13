@@ -37,16 +37,16 @@ public:
 		button[0].concept = "Flare";
 
 		button[1] = Region(130, 10, 130+W, 10+H);
-		button[1].concept = "Coronal Hole";
+		button[1].concept = CONCEPT;
 
 		button[2] = Region(250, 10, 250+W, 10+H);
-		button[2].concept = "Filament";
+		button[2].concept = "EXP";
 
 		button[3] = Region(10, 80, 10+W, 80+H);
 		button[3].concept = "None";
 
 		button[4] = Region(130, 80, 130+W, 80+H);
-		button[4].concept = "NoFlare";
+		button[4].concept = "No"+CONCEPT;
 
 		button[5] = Region(250, 80, 250+W, 80+H);
 		button[5].concept = "Confirm";
@@ -77,10 +77,12 @@ public:
 		rectangle(sceen, Point(region.left/8, region.up/8), Point(region.right/8, region.down/8), Scalar(0,0,255));
 		for ( Region r : fb.annotations  ){
 			Scalar color =Scalar(0,0,255);
-			if ( r.concept != "Flare" ){
+			if ( r.concept == "No"+CONCEPT ){
 				color = Scalar(255,0,0);
 			}
-			rectangle(sceen, Point(r.left/8, r.up/8), Point(r.right/8, r.down/8), color );	
+			if ( r.concept.find(CONCEPT) != string::npos ){
+				rectangle(sceen, Point(r.left/8, r.up/8), Point(r.right/8, r.down/8), color );	
+			}
 		}
 		
 		for ( Rect t : recognition_result ){
@@ -111,9 +113,11 @@ public:
 		region.right = 0;
 		region.up = 0;
 		region.down = 0;
-		recognition_result = reco.recognition( fb.gray );
+		recognition_result = reco.recognition( fb.gray, CONCEPT );
 		//¶Á±ê×¢
-		lmsal.find( imgnames[day], "Flare" );
+		lmsal.find( imgnames[day], CONCEPT );
+
+		cout<<"Day: "<<day<<endl;
 	}
 
 	void start(int DAY = 0){
@@ -149,7 +153,7 @@ public:
 		day = DAY;
 		wave = 0;
 		N = imgnames.size();
-		cout<<N<<endl;
+		cout<<"image size : "<<N<<endl;
 
 		read_image();
 		show_image();

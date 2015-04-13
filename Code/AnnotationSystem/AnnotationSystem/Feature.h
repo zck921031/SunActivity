@@ -30,10 +30,12 @@ void println( vector<TP> x, ofstream& os ){
 		if ( N-1 == i ) os<<endl; else os<<",";
 	}
 }
+
+
 int genFeature(  ){
 	string path = "feature//";
-	string concepts[] = {"Flare", "NoFlare"};
-	int cnt[] = {475, 518};
+	string concepts[] = {CONCEPT, "No"+CONCEPT };
+	int cnt[] = {108, 125};
 	//int cnt[] = {3, 3};
 	int total = 0;for (auto t:cnt) total+=t;
 

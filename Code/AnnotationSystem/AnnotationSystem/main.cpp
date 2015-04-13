@@ -47,10 +47,13 @@ int main(){
 	cout<<"hello world"<<endl;
 
 	//AnnotationGui t;
-	//t.start(3);
+	//t.start(7);
 
 	//SplitImage si;
-	//si.work();
+	//set<string> cocept;
+	//cocept.insert(CONCEPT);
+	//cocept.insert("No"+CONCEPT);
+	//si.work( cocept );
 
 	//Reco reco;
 	//reco.GenFeatureToTxt();
@@ -60,7 +63,7 @@ int main(){
 
 	//__SIFT_BOW::teddytest();
 	
-	genFeature();
+	//genFeature();
 
 	system("pause");
 

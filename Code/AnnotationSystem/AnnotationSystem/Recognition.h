@@ -14,6 +14,7 @@ public:
 		mp["Filament"] = 3;
 		mp["None"] = 0;
 		mp["NoFlare"] = -1;
+		mp["NoCoronal Hole"] = -2;
 	}
 	void ReadFeatureFromTxt(){
 		ifstream in;
@@ -81,6 +82,7 @@ public:
 	void add(string concept, vector<double>x, bool issave = true ){
 		yT.push_back( mp[concept] );
 		xT.push_back( x );
+		
 		if (issave) save();
 	}
 
@@ -116,12 +118,14 @@ public:
 		return sum;
 	}
 
-	int classify(const vector<double>& x){
+	int classify(const vector<double>& x, string CONCEPT){
 		int N = xT.size();
 		vector< pair<double,int> > dist(N);
 		for (int i=0; i<N; i++){
 			dist[i].first = distance2(xT[i], x);
 			dist[i].second = yT[i];
+			if ( abs(yT[i]) != abs( mp[CONCEPT] ) ) dist[i].first = 1e25;
+			//else cout<<dist[i].first<<" "<<yT[i]<<endl;
 		}
 		sort( begin(dist), end(dist) );
 		int K = 5;
@@ -138,22 +142,23 @@ public:
 	}
 
 
-	vector<Rect> recognition( Mat gray[] ){
-		int size = 384;
+	vector<Rect> recognition( Mat gray[], string CONCEPT ){
+		int size = 512;
 		vector<Rect> ret;
-		for (int i=256; i<3500; i+=256 )
-		for (int j=256; j<3500; j+=256 )
+		for (int i=256; i<4096; i+=size/2 )
+		for (int j=256; j<4096; j+=size/2 )
 		{
+			if ( abs(i+size/2-2048)*abs(i+size/2-2048) + abs(j+size/2-2048)*abs(j+size/2-2048) > 1600*1600  ) continue;
 			vector<double> x;
 			for (int k=0; k<9; k++){
 				Mat img = Mat(gray[k], Rect(i,j,size,size) );
 				vector<double> res = ColorHist(img );
 				for ( double t : res ) x.push_back(t);				
 			}
-			int cl = classify(x);
-			if ( 1==cl ){
+			int cl = classify(x, CONCEPT);
+			if ( mp[CONCEPT]==cl ){
 				ret.push_back( Rect(i/8, j/8, size/8, size/8) );
-				cout<<"Find Flare: "<<Rect(i,j,512,512)<<endl;
+				cout<<"Find "+CONCEPT+" : "<<Rect(i,j,size/8,size/8)<<endl;
 			}
 		}
 		return ret;

@@ -7,7 +7,7 @@
 class SplitImage{
 
 public:
-	void work(){
+	void work( set<string> Concept = set<string>() ){
 
 		vector<string> imgnames;
 		ifstream in;
@@ -29,16 +29,28 @@ public:
 			FrameBase fb;
 			fb.setPath("..//..//..//data//regional annotation//img//");
 			fb.unserialize(w);
+			vector<Region> rg;
+			for ( Region it : fb.annotations ){
+				if ( Concept.count( it.concept )  ) rg.push_back(it);
+			}
+			fb.annotations = rg;
 			if ( fb.annotations.empty() ) continue;
+
 			fb.read_image();
 			Mat img;
+			int skip = false;
+			for (int i=0; i<9; i++){
+				if ( fb.names[i].substr(21, 4) != WaveNames[i] ) skip = true;
+				if ( !fb.src[i].data ) skip = true;
+			}
+			if ( skip ){
+				cerr<<w.substr(0,8)<<endl;
+				continue;
+			}
+			
+			cout<<w.substr(0,8)<<endl;
+
 			for ( Region r : fb.annotations ){
-				int skip = false;
-				for (int i=0; i<9; i++){
-					if ( fb.names[i].substr(21, 4) != WaveNames[i] ) skip = true;
-					if ( !fb.src[i].data ) skip = true;
-				}
-				if ( skip ) continue;
 				int id = ++cnt[ r.concept ];
 				for (int i=0; i<9; i++){
 					img = Mat( fb.src[i], Rect(r.left, r.up, r.right-r.left, r.down-r.up) );
