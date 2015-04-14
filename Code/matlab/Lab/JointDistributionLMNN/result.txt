@@ -1,0 +1,82 @@
+Flare:
+	colorHist:
+		1-NN Error for raw聽(high dimensional) input is : 6.05%
+		1-NN Error after PCA in 3d is : 11.7%
+		1-NN Error after LMNN in 3d is : 4.03%
+		1-NN Error after gbLMNN in 3d is : 2.22%
+		fisher训练正确率1
+		Raw, fisher测试正确率0.96169
+		fisher训练正确率0.9839
+		After lmnn, fisher测试正确率0.97782
+	
+	sift:
+		1-NN Error for raw聽(high dimensional) input is : 12.3%
+		1-NN Error after PCA in 3d is : 5.44%
+		1-NN Error after LMNN in 3d is : 4.44%
+		1-NN Error after gbLMNN in 3d is : 4.64%
+		fisher训练正确率1
+		Raw, fisher测试正确率0.73387
+		fisher训练正确率1
+		After lmnn, fisher测试正确率0.95766
+	
+	lbp:
+		1-NN Error for raw聽(high dimensional) input is : 11.7%
+		1-NN Error after PCA in 3d is : 14.9%
+		1-NN Error after LMNN in 3d is : 5.24%
+		1-NN Error after gbLMNN in 3d is : 4.84%
+		Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  7.904828e-24. 
+		> In fisherbcl at 24
+		  In classify1 at 102 
+		fisher训练正确率0
+		Raw, fisher测试正确率0.37097
+		fisher训练正确率0.99799
+		After lmnn, fisher测试正确率0.95766
+		
+CH:
+	colorHist:
+		1-NN Error for raw聽(high dimensional) input is : 0%
+		1-NN Error after PCA in 3d is : 4.31%
+		1-NN Error after LMNN in 3d is : 0.862%
+		1-NN Error after gbLMNN in 3d is : 0.862%
+		Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  2.924240e-23. 
+		> In fisherbcl at 24
+		  In classify1 at 102 
+		fisher训练正确率0
+		Raw, fisher测试正确率0.14655
+		fisher训练正确率0.93162
+		After PCA, fisher测试正确率0.97414
+		fisher训练正确率1
+		After lmnn, fisher测试正确率0.99138
+	sift:
+		1-NN Error for raw聽(high dimensional) input is : 30.2%
+		1-NN Error after PCA in 3d is : 19.8%
+		1-NN Error after LMNN in 3d is : 7.76%
+		1-NN Error after gbLMNN in 3d is : 7.76%
+		Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  9.422081e-22. 
+		> In fisherbcl at 24
+		  In classify1 at 102 
+		fisher训练正确率0
+		Raw, fisher测试正确率0.42241
+		fisher训练正确率0.94017
+		After PCA, fisher测试正确率0.89655
+		Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  1.612721e-17. 
+		> In fisherbcl at 24
+		  In classify1 at 108 
+		fisher训练正确率1
+		After lmnn, fisher测试正确率0.92241	
+	lbp:
+		1-NN Error for raw聽(high dimensional) input is : 0.862%
+		1-NN Error after PCA in 3d is : 3.45%
+		1-NN Error after LMNN in 3d is : 1.72%
+		1-NN Error after gbLMNN in 3d is : 1.72%
+		Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  5.421640e-27. 
+		> In fisherbcl at 24
+		  In classify1 at 102 
+		fisher训练正确率1
+		Raw, fisher测试正确率0.68103
+		fisher训练正确率0.96581
+		After PCA, fisher测试正确率0.99138
+		fisher训练正确率1
+		After lmnn, fisher测试正确率0.99138
+		
+		
