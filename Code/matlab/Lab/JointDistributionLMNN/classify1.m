@@ -6,8 +6,10 @@ clear
 close all
 
 %% Load data 
-%load data/segment.mat;
-[xTrain, yTrain, xTest, yTest] = load_feature_lbp('CH_NoCH');
+%[xTrain, yTrain, xTest, yTest] = load_feature_colorHist('Flare_NoFlare');
+%[xTrain, yTrain, xTest, yTest] = load_feature_sift('SS_NoSS');
+[xTrain, yTrain, xTest, yTest] = load_feature_colorHist('SS_NoSS');
+%[xTrain, yTrain, xTest, yTest] = load_feature_lbp('SS_NoSS');
 
 xTrain = xTrain*256;
 xTest = xTest*256;
@@ -108,4 +110,8 @@ disp( [ 'After PCA, fisher测试正确率' , num2str(sum( ( ( xTest * L0(1:3, :)'* w 
 [w, b] = fisherbcl( xTrain*L', uint8( yTrain ) );
 disp( [ 'After lmnn, fisher测试正确率' ,  num2str(sum( ( ( xTest * L' * w + b ) < 0 ) == yTest )/(size(xTest,1) ) ) ] );
 
+addpath '../Classify';
+figure(6);
+ClassAVGbcl(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'g' );
+ClassAVGbcl(xTrain, yTrain, xTest, yTest, L, 'r');
 

@@ -35,7 +35,7 @@ void println( vector<TP> x, ofstream& os ){
 int genFeature(  ){
 	string path = "feature//";
 	string concepts[] = {CONCEPT, "No"+CONCEPT };
-	int cnt[] = {108, 125};
+	int cnt[] = {73, 122};
 	//int cnt[] = {3, 3};
 	int total = 0;for (auto t:cnt) total+=t;
 

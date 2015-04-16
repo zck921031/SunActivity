@@ -71,6 +71,7 @@ public:
 	}
 
 	void show_image(){
+		if ( !fb.success ) return ;
 		Mat sceen = img[wave].clone();
 		putText( sceen, region.concept, Point(50, 50),CV_FONT_HERSHEY_COMPLEX, 0.8, Scalar(0, 255, 0) );
 		//cout<<wave<<endl;
@@ -86,7 +87,7 @@ public:
 		}
 		
 		for ( Rect t : recognition_result ){
-			rectangle(sceen, t,  Scalar(255,255,0) );
+			rectangle(sceen, t,  Scalar(255,255,0, 0.7) );
 		}
 		for ( Rect t : lmsal.res ){
 			rectangle(sceen, Rect(t.x/8, t.y/8, t.width/8, t.height/8 ),  Scalar(0,255,255) );
@@ -102,6 +103,7 @@ public:
 		fb.setPath("..//..//..//data//regional annotation//img//");
 		fb.unserialize( imgnames[day] );
 		fb.read_image();
+		if ( !fb.success ) return ;
 		for (int i=0; i<9; i++){
 			double scale = 0.125;
 			resize(fb.src[i], img[i], Size( (int)(scale*fb.src[i].cols), (int)(scale*fb.src[i].rows) ) );

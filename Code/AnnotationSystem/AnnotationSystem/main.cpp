@@ -47,7 +47,7 @@ int main(){
 	cout<<"hello world"<<endl;
 
 	//AnnotationGui t;
-	//t.start(7);
+	//t.start(150);
 
 	//SplitImage si;
 	//set<string> cocept;

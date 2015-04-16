@@ -10,11 +10,13 @@ class Reco{
 public:
 	Reco(){
 		mp["Flare"] = 1;
+		mp["NoFlare"] = -1;
 		mp["Coronal Hole"] = 2;
+		mp["NoCoronal Hole"] = -2;
 		mp["Filament"] = 3;
 		mp["None"] = 0;
-		mp["NoFlare"] = -1;
-		mp["NoCoronal Hole"] = -2;
+		mp["Sunspot"] = 4;
+		mp["NoSunspot"] = -4;
 	}
 	void ReadFeatureFromTxt(){
 		ifstream in;
@@ -143,12 +145,21 @@ public:
 
 
 	vector<Rect> recognition( Mat gray[], string CONCEPT ){
-		int size = 512;
-		vector<Rect> ret;
-		for (int i=256; i<4096; i+=size/2 )
-		for (int j=256; j<4096; j+=size/2 )
 		{
-			if ( abs(i+size/2-2048)*abs(i+size/2-2048) + abs(j+size/2-2048)*abs(j+size/2-2048) > 1600*1600  ) continue;
+			map<int,int> cnt;
+			for (int i=0; i<(int)yT.size(); i++){
+				cnt[ yT[i] ]++;
+			}
+			for ( auto t : cnt ){
+				cout<<"("<<t.first<<" , "<<t.second<<")"<<endl;
+			}
+		}
+		int size = 96;
+		vector<Rect> ret;
+		for (int i=256; i<4096; i+=size )
+		for (int j=256; j<4096; j+=size )
+		{
+			if ( abs(i+size/2-2048)*abs(i+size/2-2048) + abs(j+size/2-2048)*abs(j+size/2-2048) > 1550*1550  ) continue;
 			vector<double> x;
 			for (int k=0; k<9; k++){
 				Mat img = Mat(gray[k], Rect(i,j,size,size) );
