@@ -6,9 +6,9 @@ clear
 close all
 
 %% Load data 
-%[xTrain, yTrain, xTest, yTest] = load_feature_colorHist('Flare_NoFlare');
+[xTrain, yTrain, xTest, yTest] = load_feature('Flare_NoFlare', 1:9, 1:3);
 %[xTrain, yTrain, xTest, yTest] = load_feature_sift('SS_NoSS');
-[xTrain, yTrain, xTest, yTest] = load_feature_colorHist('SS_NoSS');
+%[xTrain, yTrain, xTest, yTest] = load_feature_colorHist('SS_NoSS');
 %[xTrain, yTrain, xTest, yTest] = load_feature_lbp('SS_NoSS');
 
 xTrain = xTrain*256;
@@ -110,8 +110,9 @@ disp( [ 'After PCA, fisher测试正确率' , num2str(sum( ( ( xTest * L0(1:3, :)'* w 
 [w, b] = fisherbcl( xTrain*L', uint8( yTrain ) );
 disp( [ 'After lmnn, fisher测试正确率' ,  num2str(sum( ( ( xTest * L' * w + b ) < 0 ) == yTest )/(size(xTest,1) ) ) ] );
 
-addpath '../Classify';
+addpath '../lab/func';
 figure(6);
-ClassAVGbcl(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'g' );
-ClassAVGbcl(xTrain, yTrain, xTest, yTest, L, 'r');
+ClassAVGPlot(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'g' );
+ClassAVGPlot(xTrain, yTrain, xTest, yTest, L0(1:3, :), 'b' );
+ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, 'r');
 

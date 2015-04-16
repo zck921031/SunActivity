@@ -1,14 +1,17 @@
 %load feature
-function [xTrain, yTrain, xTest, yTest] = load_feature()
+function [xTrain, yTrain, xTest, yTest] = load_feature(concept, modal, feature)
+    disp( concept);
+    disp( modal );
+    disp( feature );
     waveNames = {'0094','0131','0171','0193','0211','0304','0335','1600','1700'};
     featureNames = {'colorHist', 'siftHist', 'lbpHist'};
-    addpath 'H:\毕业设计\Flare_Noflare\feature';
+    addpath(['H:\毕业设计\', concept, '\feature']);
     x = [];
     y = csvread('concept.txt');
-    for wave = 1 : 9
-        waveName = waveNames{wave};
-        for featureCnt = 3 : 3
-            featureName = featureNames{featureCnt};
+    for i = 1 : max( size(modal) )
+        waveName = waveNames{ modal(i) };
+        for j = 1 : max( size( feature ) )
+            featureName = featureNames{ feature(j)  };
             Name = [ waveName '.' featureName '.txt'  ];
             x = [x csvread(Name)];
         end
