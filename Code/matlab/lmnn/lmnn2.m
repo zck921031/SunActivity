@@ -137,6 +137,7 @@ pars=extractpars(varargin,pars);
 if isstruct(pars.pars), pars=pars.pars;end;
 if(~pars.quiet),fprintf('LMNN stable version 2.6.0\n');end;
 if pars.diagonal, pars.obj=2;L=eye(size(L)); end;
+%disp( pars.obj );
 
 L=L(1:pars.outdim,:);
 
