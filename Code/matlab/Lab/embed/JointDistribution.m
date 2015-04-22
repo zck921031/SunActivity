@@ -9,7 +9,7 @@ addpath '../func';
 %% Load data 
 %[xTrain, yTrain, xTest, yTest] = load_feature('Flare_NoFlare', 1:9, 1:3);
 %[xTrain, yTrain, xTest, yTest] = load_feature_sift('SS_NoSS');
-[xTrain, yTrain, xTest, yTest] = load_feature('SS_NoSS', 1:9, 1:3);
+[xTrain, yTrain, xTest, yTest] = load_feature('CH_NoCH', 1:9, 1:3);
 %[xTrain, yTrain, xTest, yTest] = load_feature_lbp('SS_NoSS');
 
 %xTrain = xTrain*256;
@@ -50,7 +50,7 @@ drawnow
 %% Use LMNN for dimensionality reduction
 fprintf('\n')
 disp('Learning initial metric with LMNN ...')
-[L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',1000,'quiet',1,'outdim',3,'mu',0.5,'validation',0.2,'earlystopping',25,'subsample',0.3);
+[L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',2000,'quiet',1,'outdim',3,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3);
 
 %% KNN classification with 3D LMNN metric
 errL=knncl(L,xTr, yTr,xTe,yTe,1);fprintf('\n');
@@ -87,3 +87,5 @@ for i = 1 : 3
     set(h,'box','off')
 end
 
+cd ../lab/embed;
+save LMNN_L_ L;

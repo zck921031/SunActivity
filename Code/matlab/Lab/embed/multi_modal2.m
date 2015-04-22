@@ -1,19 +1,21 @@
-%% LMNN Demo
-%
-% This demo tests various flavors of LMNN
+%% mmLMNN
+% Solve: Min_{A_i \in \mathbb{S}_+^dim , i=1..9} 
+% f(A) = sum_{( i,j) \in S } ( d_A(x_i-x_j)^2 ) ) + sum_{( i,j) \in D } max( 0, 1 + d_A(x_i-x_j)^2 - d_A(x_i-x_k)^2 )
+
 %% Initialize path anc clear screen
 clear
 close all
-
 addpath '../func';
 %% Load data 
+Concept = 'SS';
 %[xTrain, yTrain, xTest, yTest] = load_feature('Flare_NoFlare', 1:9, 1:3);
 %[xTrain, yTrain, xTest, yTest] = load_feature_sift('SS_NoSS');
-[xTrain, yTrain, xTest, yTest] = load_feature('CH_NoCH', 1:5, 1:3);
+[xTrain, yTrain, xTest, yTest] = load_feature([Concept '_No' Concept], 1:9, 1:3);
 %[xTrain, yTrain, xTest, yTest] = load_feature_lbp('SS_NoSS');
 
-xTrain = xTrain*256;
-xTest = xTest*256;
+%xTrain = xTrain*256;
+%xTest = xTest*256;
+
 yTrain( find(yTrain== -1) ) = 0;
 yTest ( find(yTest == -1) ) = 0;
 
@@ -24,52 +26,25 @@ xTr = xTrain(:, :)'; yTr = yTrain';
 xTe = xTest (:, :)'; yTe = yTest';
 
 
-%install;
-addpath '../../fisher';
 cd '../../lmnn';
 setpaths;
-figh=figure ('Name','PCA');
 clc;
-rand('seed',1);
 
 %% KNN classification error before metric learning  
 errRAW=knncl([],xTr, yTr,xTe,yTe,1);fprintf('\n');
 fprintf('\n')
-errRAW
 %% KNN classification after PCA
 L0=pca(xTr)';
 errPCA=knncl(L0(1:3,:),xTr, yTr,xTe,yTe,1);fprintf('\n');
-subplot(1,2,1);
-scat(L0*xTr,3,yTr);
-title(['PCA Training (Error: ' num2str(100*errPCA(1),3) '%)'])
-noticks;box on;
-subplot(1,2,2);
-scat(L0*xTe,3,yTe);
-title(['PCA Test (Error: ' num2str(100*errPCA(2),3) '%)'])
-noticks;box on;
-drawnow
 
 
 %% Use LMNN for dimensionality reduction
 fprintf('\n')
 disp('Learning initial metric with LMNN ...')
-[L,~] = lmnn2(xTr, yTr,5,L0,'maxiter',1000,'quiet',1,'outdim',3,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3);
+[L,~] = lmnn3(xTr, yTr,3,L0,'maxiter',2000,'quiet',1,'outdim',3*9,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.05);
 
 %% KNN classification with 3D LMNN metric
 errL=knncl(L,xTr, yTr,xTe,yTe,1);fprintf('\n');
-
-%% Plotting LMNN embedding
-figure('Name','LMNN');
-subplot(1,2,1);
-scat(L*xTr,3,yTr);
-title(['LMNN Training (Error: ' num2str(100*errL(1),3) '%)'])
-noticks;box on;
-drawnow
-subplot(1,2,2);
-scat(L*xTe,3,yTe);
-title(['LMNN Test (Error: ' num2str(100*errL(2),3) '%)'])
-noticks;box on;
-drawnow
 
 
 %% Final Results
@@ -79,9 +54,18 @@ disp(['1-NN Error for raw (high dimensional) input is : ',num2str(100*errRAW(2)
 disp(['1-NN Error after PCA in 3d is : ',num2str(100*errPCA(2),3),'%']);
 disp(['1-NN Error after LMNN in 3d is : ',num2str(100*errL(2),3),'%']);
 
+
+addpath '../lab/func';
 figure(6);
 mAP = [];
-[~,~,~,mAP(1)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'g' );
-[~,~,~,mAP(2)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L0(1:3, :), 'b' );
-[~,~,~,mAP(3)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, 'r');
+[~,~,~,mAP(1)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'color', 'b', 'title', Concept );
+[~,~,~,mAP(2)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L0(1:3*9, :), 'color', 'g', 'title', Concept );
+[~,~,~,mAP(3)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, 'color', 'r', 'title', Concept );
+for i = 1 : 3
+    subplot(2,2,i);
+    h = legend('Euclidean', 'PCA', 'algo2'); hold on;
+    set(h,'box','off')
+end
 
+cd ../lab/embed;
+save mmLMNN L;
