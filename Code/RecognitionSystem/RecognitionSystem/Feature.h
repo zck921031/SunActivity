@@ -32,6 +32,11 @@ void println( vector<TP> x, ofstream& os ){
 	}
 }
 
+/**
+ * 从文件中读取模板数据的特征
+ * input: path 放特征的文件夹; ratio 用作训练集的数据比例
+ * output: x 一行一个特征; y 一行一个标记
+ */
 
 void load_feature( string path, vector< vector<double> >&x, vector<int>&y, double ratio = 1.0 ){
 	vector< vector<double> > xtmp;
@@ -80,3 +85,16 @@ void load_feature( string path, vector< vector<double> >&x, vector<int>&y, doubl
 
 }
 
+void load_feature( string path, vector< vector<double> >&x, vector<int>&y, vector<Sift_BOW>&sift_bows, double ratio = 1.0 )
+{
+
+	load_feature(path, x, y, ratio);
+
+	sift_bows.resize( end(modal) - begin(modal) );
+	int cnt = 0;
+	for ( string waveName : modal ){
+		auto g = csvread<double>( path + "//" + waveName + ".center.txt");
+		sift_bows[cnt].setCenters(g);
+		cnt++;
+	}
+}

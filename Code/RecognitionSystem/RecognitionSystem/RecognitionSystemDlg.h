@@ -2,15 +2,23 @@
 // RecognitionSystemDlg.h : 头文件
 //
 
+#pragma once
+
 #include "cv.h"
 #include "highgui.h"
 
-#pragma once
+#include <map>
+using namespace std;
+
 
 
 // CRecognitionSystemDlg 对话框
 class CRecognitionSystemDlg : public CDialogEx
 {
+public:
+	void myinit();
+	map<string, string> pars;
+	vector< vector<string> > imageNames;
 // 构造
 public:
 	CRecognitionSystemDlg(CWnd* pParent = NULL);	// 标准构造函数

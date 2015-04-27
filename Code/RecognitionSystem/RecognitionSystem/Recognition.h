@@ -2,11 +2,45 @@
 
 #include "Feature.h"
 
-class Reconition{
-	vector< vector<double> > x;
-	vector<int> y;
+class Recognition{
+	vector< vector<double> > xTr;
+	vector<int> yTr;
+	string Concept;
+	vector<Sift_BOW> sift_bows;
+	map<string,string> pars;
+	vector< vector<double> > L;
 public:
-	Reconition(){
+	string RealPath(string prefix){
+		return prefix + "//" + Concept+"_No"+Concept + "//feature//";
+	}
+	vector<double> project(const vector<double>&x_origin, const vector< vector<double> >&L ){
+		if ( L.empty() ) return x_origin;
+
+		int D = x_origin.size();
+		int d = L.size();
+		vector<double> x(d, 0);
+		for (int i=0; i<d; i++){
+			for (int j=0; j<D; j++){
+				x[i] += L[i][j]*x_origin[j];
+			}
+		}
+		return x;
+	}
+
+	Recognition(string Concept, const map<string,string>&_pars):Concept(Concept), pars(_pars)
+	{
+		string realpath = RealPath( pars["featurepath"] );
+
+		load_feature( realpath, xTr, yTr, sift_bows, 0.5 );
+
+		L.clear();
+		if ( "Euclidean" != pars["distanceName"] ){
+			L = csvread<double>(realpath + "//" + pars["distanceName"] );
+			for (int i=xTr.size()-1; i>=0; i--){
+				xTr[i] = project(xTr[i], L);
+			}
+		}
+
 
 	}
 	
@@ -20,41 +54,77 @@ public:
 		return sum;
 	}
 
-	int classify(const vector<double>& x){
+	int classify(vector<double> xTe){
+		xTe = project(xTe, L);
 
-
-	}
-
-
-	vector<Rect> recognition( Mat gray[], string CONCEPT ){
-		{
-			map<int,int> cnt;
-			for (int i=0; i<(int)y.size(); i++){
-				cnt[ y[i] ]++;
-			}
-			for ( auto t : cnt ){
-				cout<<"("<<t.first<<" , "<<t.second<<")"<<endl;
+		double sump=0, sumn=0, cntp=0, cntn=0;
+		for (int i = xTr.size()-1; i>=0; i--){
+			double dis = distance2(xTr[i], xTe);
+			if ( 1 == yTr[i] ){
+				sump += dis;
+				cntp += 1;
+			}else{
+				sumn += dis;
+				cntn += 1;
 			}
 		}
-		int size = 96;
+		sump /= cntp;
+		sumn /= cntn;
+		return sump < 1.0*sumn;
+	}
+
+	vector<double> genMMfeature(Mat img, Sift_BOW sift_bow){
+		vector<double> h, res;
+
+		res = ColorHist(img);
+		for( auto &t:res ) h.push_back(t);
+
+		res = sift_bow.siftHist(img);
+		for( auto &t:res ) h.push_back(t);
+
+		res = Lbp59<uchar>(img);
+		for( auto &t:res ) h.push_back(t);
+
+		return h;
+	}
+
+	vector<Rect> recognition( vector<Mat> gray ){
+		int size = 256;
 		vector<Rect> ret;
-		for (int i=256; i<4096; i+=size )
-		for (int j=256; j<4096; j+=size )
+		
+		#pragma omp parallel for
+		for (int i=0; i<4096; i+=size )
+		for (int j=0; j<4096; j+=size )
 		{
-			if ( abs(i+size/2-2048)*abs(i+size/2-2048) + abs(j+size/2-2048)*abs(j+size/2-2048) > 1550*1550  ) continue;
-			vector<double> x;
+			if ( (i+size/2-2048)*(i+size/2-2048) + (j+size/2-2048)*(j+size/2-2048) > 1550*1550  ) continue;
+			vector<double> xTe;
 			for (int k=0; k<9; k++){
 				Mat img = Mat(gray[k], Rect(i,j,size,size) );
-				vector<double> res = ColorHist(img );
-				for ( double t : res ) x.push_back(t);				
+				vector<double> res = genMMfeature(img, sift_bows[k] );
+				for ( double t : res ) xTe.push_back(t);
 			}
-			int cl = classify(x);
+			int cl = classify(xTe);
 
-			ret.push_back( Rect(i, j, size, size) );
-			cout<<"Find "+CONCEPT+" : "<<Rect(i,j,size, size)<<endl;
-
+			#pragma omp critical
+			if( cl > 0 ){
+				ret.push_back( Rect(i, j, size, size) );
+				//cout<<"Find "+Concept+" : "<<Rect(i,j,size, size)<<endl;
+			}
 		}
 		return ret;
 	}
+	
+	vector<Rect> recognition( vector<String> names ){
+		if ( names.size() != 9 ) return vector<Rect>();
+		vector<Mat> images( names.size() );
 
+		#pragma omp parallel for
+		for( int i=0; i<(int)names.size(); i++ ){
+			images[i] = load_image( pars["imagepath"] + "//" + names[i] );
+		}
+
+		//return vector<Rect>();
+
+		return recognition(images);
+	}
 };

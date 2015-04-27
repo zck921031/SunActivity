@@ -6,10 +6,14 @@
 #include "RecognitionSystem.h"
 #include "RecognitionSystemDlg.h"
 #include "afxdialogex.h"
+
+
 #include "func.h"
 #include "sift_bow.h"
 #include "lbp.h"
 #include "Feature.h"
+#include "Recognition.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -102,6 +106,8 @@ BOOL CRecognitionSystemDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+	myinit();
+
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -155,30 +161,51 @@ HCURSOR CRecognitionSystemDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CRecognitionSystemDlg::myinit()
+{
+	pars["imageNames"] = "C://Users//zck//Documents//GitHub//SunActivity//Code//RecognitionSystem//RecognitionSystem//data//ImageNameByDay.txt";
+	pars["imagepath"] = "C://Users//zck//Documents//GitHub//SunActivity//data//regional annotation//img//";
+	pars["featurepath"] = "C://Users//zck//Documents//GitHub//SunActivity//data//TrainSet//feature//";
+	pars["distanceName"] = "L_mmLMNN.txt";
 
+	imageNames.clear();
+	ifstream in( pars["imageNames"] );
+	char *buf = new char[1<<20];
+	while( in.getline(buf, 1<<20) ){
+		if ( *buf == '#' ) continue;
+		if ( strlen(buf) < 3 ) continue;
+		imageNames.push_back( SplitStringByChar(buf, ',' ) );
+	}
+	delete []buf;
+	in.close();
+}
 
 void CRecognitionSystemDlg::OnBnClickedButton1()
 {
 	//cv::Mat img = cv::imread("C://Users//zck//Pictures//样例图片//头像.jpg");
-	cv::Mat img = load_image("H://毕业设计//Flare_Noflare//img//Flare//2//0094.jpg");
-	cv::namedWindow("1");
-	cv::imshow("1", img);
-	/*auto g = csvread<double>("..//..//..//data//TrainSet//feature//Flare_Noflare//feature//0094.center.txt");
-	Sift_BOW sift_test;
-	sift_test.setCenters(g);	
-	auto h = sift_test.siftHist(img);
-
-	h = Lbp59<uchar>(img);
-
-	h = ColorHist(img);
-	*/
-	vector< vector<double> > x;
-	vector<int> h;
-	load_feature("..//..//..//data//TrainSet//feature//Flare_Noflare//feature//", x, h, 0.5);
+	//cv::Mat img = load_image("H://毕业设计//Flare_Noflare//img//Flare//2//0094.jpg");
+	//cv::namedWindow("1");
+	//cv::imshow("1", img);
+	//vector< vector<double> > x;
+	//vector<int> h;
+	//load_feature("..//..//..//data//TrainSet//feature//Flare_Noflare//feature//", x, h, 0.5);
 	stringstream ss;
-	//ss<<sift_test.centers.rows<<","<<sift_test.centers.cols;
-	
-	ss<<x.size();
+	Recognition r("flare", pars);
+	int wave=0, day=3;
+	cv::Mat img = cv::imread( pars["imagepath"] + "//" + imageNames[day][ wave ] );
+	cv::Mat sceen;
+	cv::resize(img, sceen, Size(512,512) );
+
+	vector<Rect> res = r.recognition( imageNames[day] );
+	for (  Rect t : res ){
+		rectangle(sceen, Rect(t.x/8, t.y/8, t.width/8, t.height/8 ), Scalar(0,255,255) );
+	}
+
+
+	namedWindow("1");
+	imshow("1", sceen);
+
+	ss<<imageNames[3][0];
 	
 	CEdit* pBoxOne;
 	pBoxOne = (CEdit*) GetDlgItem(IDC_EDIT2);
