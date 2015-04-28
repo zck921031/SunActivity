@@ -46,13 +46,14 @@ int main(){
 	test();
 	cout<<"hello world"<<endl;
 
-	//AnnotationGui t;
-	//t.start(150);
+	AnnotationGui t;
+	t.start(5);
 
-	//SplitImage si;
-	//set<string> cocept;
-	//cocept.insert(CONCEPT);
-	//cocept.insert("No"+CONCEPT);
+	SplitImage si;
+	set<string> cocept;
+	cocept.insert(CONCEPT);
+	cocept.insert("No"+CONCEPT);
+
 	//si.work( cocept );
 
 	//Reco reco;

@@ -19,6 +19,7 @@ public:
 	void myinit();
 	map<string, string> pars;
 	vector< vector<string> > imageNames;
+	void CRecognitionSystemDlg::ParsePars(map<string,string>&pars);
 // 构造
 public:
 	CRecognitionSystemDlg(CWnd* pParent = NULL);	// 标准构造函数
@@ -42,4 +43,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButton4();
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedButton3();
 };

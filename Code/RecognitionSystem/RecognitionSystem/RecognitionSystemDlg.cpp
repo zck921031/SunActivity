@@ -71,6 +71,9 @@ BEGIN_MESSAGE_MAP(CRecognitionSystemDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CRecognitionSystemDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON4, &CRecognitionSystemDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON2, &CRecognitionSystemDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CRecognitionSystemDlg::OnBnClickedButton3)
 END_MESSAGE_MAP()
 
 
@@ -161,12 +164,50 @@ HCURSOR CRecognitionSystemDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CRecognitionSystemDlg::ParsePars(map<string,string>&pars){
+	CString strTemp;
+	stringstream ss;
+	((CComboBox*)GetDlgItem(IDC_COMBO1))->GetWindowText(strTemp);
+	// Convert a TCHAR string to a LPCSTR
+	CT2CA pszConvertedAnsiString (strTemp);
+	int modal_idx = find( begin(modal), end(modal), string( pszConvertedAnsiString ) ) - begin(modal);
+	ss<<modal_idx;
+	pars["modal"] = ss.str();
+	ss.clear();
+
+	//parse day
+	((CComboBox*)GetDlgItem(IDC_EDIT1))->GetWindowText(strTemp);
+	CT2CA pszConvertedAnsiString2 (strTemp);
+	pars["day"] = string( pszConvertedAnsiString2 );
+	
+	
+	if ( BST_CHECKED == IsDlgButtonChecked( IDC_CHECK_flare ) )
+	{ pars["flare"] = "true"; }	else{ pars["flare"] = "false"; }
+	
+	if ( BST_CHECKED == IsDlgButtonChecked( IDC_CHECK_CH ) )
+	{ pars["CH"] = "true"; }	else{ pars["CH"] = "false"; }
+	
+	if ( BST_CHECKED == IsDlgButtonChecked( IDC_CHECK_SS ) )
+	{ pars["SS"] = "true"; }	else{ pars["SS"] = "false"; }
+
+	if ( ((CButton*)GetDlgItem(IDC_RADIO_Euclidean))->GetCheck() ){
+		pars["distanceName"] = "Euclidean";
+	}else{
+		pars["distanceName"] = "L_mmLMNN.txt";
+	}
+}
+
 void CRecognitionSystemDlg::myinit()
 {
 	pars["imageNames"] = "C://Users//zck//Documents//GitHub//SunActivity//Code//RecognitionSystem//RecognitionSystem//data//ImageNameByDay.txt";
 	pars["imagepath"] = "C://Users//zck//Documents//GitHub//SunActivity//data//regional annotation//img//";
 	pars["featurepath"] = "C://Users//zck//Documents//GitHub//SunActivity//data//TrainSet//feature//";
 	pars["distanceName"] = "L_mmLMNN.txt";
+	pars["flare"] = "false";
+	pars["CH"] = "false";
+	pars["SS"] = "false";
+	pars["day"] = "0";
+	pars["modal"] = "0";
 
 	imageNames.clear();
 	ifstream in( pars["imageNames"] );
@@ -178,6 +219,11 @@ void CRecognitionSystemDlg::myinit()
 	}
 	delete []buf;
 	in.close();
+
+
+	((CComboBox*)GetDlgItem(IDC_COMBO1))->SetCurSel(0);
+	((CComboBox*)GetDlgItem(IDC_EDIT1))->SetWindowText( _T("0") );
+	((CButton*)GetDlgItem(IDC_RADIO_Euclidean))->SetCheck(TRUE);
 }
 
 void CRecognitionSystemDlg::OnBnClickedButton1()
@@ -189,9 +235,13 @@ void CRecognitionSystemDlg::OnBnClickedButton1()
 	//vector< vector<double> > x;
 	//vector<int> h;
 	//load_feature("..//..//..//data//TrainSet//feature//Flare_Noflare//feature//", x, h, 0.5);
+	ParsePars(pars);
+
 	stringstream ss;
 	Recognition r("flare", pars);
 	int wave=0, day=3;
+	wave = atoi( pars["modal"].c_str() );
+	day =  atoi( pars["day"].c_str() );
 	cv::Mat img = cv::imread( pars["imagepath"] + "//" + imageNames[day][ wave ] );
 	cv::Mat sceen;
 	cv::resize(img, sceen, Size(512,512) );
@@ -214,4 +264,39 @@ void CRecognitionSystemDlg::OnBnClickedButton1()
 	pBoxOne->SetWindowText( cs );
 
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CRecognitionSystemDlg::OnBnClickedButton4()
+{
+	// TODO: 在此添加控件通知处理程序代码
+
+	ParsePars(pars);
+	stringstream ss;
+	ss<<pars["day"]<<"  , ";
+	ss<<pars["modal"]<<" , "<<pars["flare"]<<" , "<<pars["CH"]<<" , "<<pars["SS"]<<" , "<<pars["distanceName"];
+	
+	((CComboBox*)GetDlgItem(IDC_EDIT2))->SetWindowText( CString( ss.str().c_str() ) );
+}
+
+
+void CRecognitionSystemDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CString cs;
+	((CComboBox*)GetDlgItem(IDC_EDIT1))->GetWindowText( cs );
+	int _day = max(_wtoi(cs) - 1, 0);	
+	cs.Format( _T("%d"), _day);
+	((CComboBox*)GetDlgItem(IDC_EDIT1))->SetWindowText( cs );
+}
+
+
+void CRecognitionSystemDlg::OnBnClickedButton3()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CString cs;
+	((CComboBox*)GetDlgItem(IDC_EDIT1))->GetWindowText( cs );
+	int _day = min(_wtoi(cs) + 1, 365);
+	cs.Format( _T("%d"), _day);
+	((CComboBox*)GetDlgItem(IDC_EDIT1))->SetWindowText( cs );
 }

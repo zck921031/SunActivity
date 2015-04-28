@@ -25,8 +25,10 @@ using namespace cv;
 using namespace std;
 
 const string WaveNames[] = {"0094","0131","0171","0193","0211","0304","0335","1600","1700"};
-const string CONCEPT = "Sunspot";
+//const string CONCEPT = "Sunspot";
 //const string CONCEPT = "Flare";
+//const string CONCEPT = "Prominences";
+const string CONCEPT = "Filament";
 
 
 vector<string> SplitStringByChar( string str, char c ){

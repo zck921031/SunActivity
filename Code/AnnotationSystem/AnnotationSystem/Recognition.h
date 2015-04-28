@@ -11,12 +11,20 @@ public:
 	Reco(){
 		mp["Flare"] = 1;
 		mp["NoFlare"] = -1;
+
 		mp["Coronal Hole"] = 2;
 		mp["NoCoronal Hole"] = -2;
+
 		mp["Filament"] = 3;
+		mp["NoFilament"] = -3;
+
 		mp["None"] = 0;
+
 		mp["Sunspot"] = 4;
 		mp["NoSunspot"] = -4;
+
+		mp["Prominences"] = 5;
+		mp["NoProminences"] = -5;
 	}
 	void ReadFeatureFromTxt(){
 		ifstream in;
@@ -145,6 +153,7 @@ public:
 
 
 	vector<Rect> recognition( Mat gray[], string CONCEPT ){
+		if ( abs( mp[CONCEPT] ) >= 3 ) return vector<Rect>();
 		{
 			map<int,int> cnt;
 			for (int i=0; i<(int)yT.size(); i++){
@@ -154,12 +163,12 @@ public:
 				cout<<"("<<t.first<<" , "<<t.second<<")"<<endl;
 			}
 		}
-		int size = 96;
+		int size = 512;
 		vector<Rect> ret;
 		for (int i=256; i<4096; i+=size )
 		for (int j=256; j<4096; j+=size )
 		{
-			if ( abs(i+size/2-2048)*abs(i+size/2-2048) + abs(j+size/2-2048)*abs(j+size/2-2048) > 1550*1550  ) continue;
+			if ( abs(i+size/2-2048)*abs(i+size/2-2048) + abs(j+size/2-2048)*abs(j+size/2-2048) > 1400*1400  ) continue;
 			vector<double> x;
 			for (int k=0; k<9; k++){
 				Mat img = Mat(gray[k], Rect(i,j,size,size) );
