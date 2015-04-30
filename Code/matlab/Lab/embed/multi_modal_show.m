@@ -7,8 +7,8 @@ clear
 close all
 addpath '../func';
 %% Load data 
-Concept = 'Flare';
-load mmLMNN_Flare;
+Concept = 'SS';
+load mmLMNN_SS;
 %[xTrain, yTrain, xTest, yTest] = load_feature('Flare_NoFlare', 1:9, 1:3);
 %[xTrain, yTrain, xTest, yTest] = load_feature_sift('SS_NoSS');
 [xTrain, yTrain, xTest, yTest] = load_feature([Concept '_No' Concept], 1:9, 1:3);
@@ -58,10 +58,10 @@ disp(['1-NN Error after LMNN in 3d is : ',num2str(100*errL(2),3),'%']);
 
 addpath '../lab/func';
 figure(6);
-mAP = [];
-[~,~,~,mAP(1)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'color', 'b', 'title', Concept );
-[~,~,~,mAP(2)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L0(1:3*9, :), 'color', 'g', 'title', Concept );
-[~,~,~,mAP(3)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, 'color', 'r', 'title', Concept );
+mAP = []; ac=[]; ac2=[];
+[~,~,~,mAP(1),ac(1),ac2(1)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'color', 'b', 'title', Concept );
+[~,~,~,mAP(2),ac(2),ac2(2)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L0(1:3*9, :), 'color', 'g', 'title', Concept );
+[~,~,~,mAP(3),ac(3),ac2(3)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, 'color', 'r', 'title', Concept );
 for i = 1 : 3
     subplot(2,2,i);
     h = legend('Euclidean', 'PCA', 'algo2'); hold on;

@@ -9,6 +9,7 @@ class Recognition{
 	vector<Sift_BOW> sift_bows;
 	map<string,string> pars;
 	vector< vector<double> > L;
+	int size, board;
 public:
 	string RealPath(string prefix){
 		return prefix + "//" + Concept+"_No"+Concept + "//feature//";
@@ -27,7 +28,8 @@ public:
 		return x;
 	}
 
-	Recognition(string Concept, const map<string,string>&_pars):Concept(Concept), pars(_pars)
+	Recognition(string Concept, const map<string,string>&_pars, int size=320, int board=1500):
+		Concept(Concept),pars(_pars),size(size),board(board)
 	{
 		string realpath = RealPath( pars["featurepath"] );
 
@@ -35,7 +37,7 @@ public:
 
 		L.clear();
 		if ( "Euclidean" != pars["distanceName"] ){
-			L = csvread<double>(realpath + "//" + pars["distanceName"] );
+			L = csvread(realpath + "//" + pars["distanceName"] );
 			for (int i=xTr.size()-1; i>=0; i--){
 				xTr[i] = project(xTr[i], L);
 			}
@@ -55,6 +57,7 @@ public:
 	}
 
 	int classify(vector<double> xTe){
+		
 		xTe = project(xTe, L);
 
 		double sump=0, sumn=0, cntp=0, cntn=0;
@@ -89,14 +92,15 @@ public:
 	}
 
 	vector<Rect> recognition( vector<Mat> gray ){
-		int size = 256;
+		
 		vector<Rect> ret;
 		
 		#pragma omp parallel for
 		for (int i=0; i<4096; i+=size )
+		#pragma omp parallel for
 		for (int j=0; j<4096; j+=size )
 		{
-			if ( (i+size/2-2048)*(i+size/2-2048) + (j+size/2-2048)*(j+size/2-2048) > 1550*1550  ) continue;
+			if ( (i+size/2-2048)*(i+size/2-2048) + (j+size/2-2048)*(j+size/2-2048) > board*board  ) continue;
 			vector<double> xTe;
 			for (int k=0; k<9; k++){
 				Mat img = Mat(gray[k], Rect(i,j,size,size) );

@@ -14,7 +14,6 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include "func.h"
 using namespace std;
 using namespace cv;
 

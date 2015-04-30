@@ -48,6 +48,9 @@
     <ClInclude Include="Recognition.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="test.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RecognitionSystem.cpp">
@@ -57,6 +60,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lbp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="func.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="sift_bow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="feature.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

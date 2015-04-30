@@ -8,12 +8,6 @@
 #include "afxdialogex.h"
 
 
-#include "func.h"
-#include "sift_bow.h"
-#include "lbp.h"
-#include "Feature.h"
-#include "Recognition.h"
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,6 +68,7 @@ BEGIN_MESSAGE_MAP(CRecognitionSystemDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CRecognitionSystemDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON2, &CRecognitionSystemDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON3, &CRecognitionSystemDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON_Open, &CRecognitionSystemDlg::OnBnClickedButtonOpen)
 END_MESSAGE_MAP()
 
 
@@ -178,6 +173,9 @@ void CRecognitionSystemDlg::ParsePars(map<string,string>&pars){
 	//parse day
 	((CComboBox*)GetDlgItem(IDC_EDIT1))->GetWindowText(strTemp);
 	CT2CA pszConvertedAnsiString2 (strTemp);
+	if ( pars["day"] != string( pszConvertedAnsiString2 )  ){
+		result.clear();
+	}
 	pars["day"] = string( pszConvertedAnsiString2 );
 	
 	
@@ -235,10 +233,14 @@ void CRecognitionSystemDlg::OnBnClickedButton1()
 	//vector< vector<double> > x;
 	//vector<int> h;
 	//load_feature("..//..//..//data//TrainSet//feature//Flare_Noflare//feature//", x, h, 0.5);
+	result.clear();
 	ParsePars(pars);
 
 	stringstream ss;
-	Recognition r("flare", pars);
+	Recognition r("flare", pars, 320, 1800);
+	if ( "true" == pars["CH"] ) r = Recognition("CH", pars, 512, 1550);
+	if ( "true" == pars["SS"] ) r = Recognition("SS", pars, 72, 1400);
+
 	int wave=0, day=3;
 	wave = atoi( pars["modal"].c_str() );
 	day =  atoi( pars["day"].c_str() );
@@ -249,13 +251,11 @@ void CRecognitionSystemDlg::OnBnClickedButton1()
 	vector<Rect> res = r.recognition( imageNames[day] );
 	for (  Rect t : res ){
 		rectangle(sceen, Rect(t.x/8, t.y/8, t.width/8, t.height/8 ), Scalar(0,255,255) );
+		result.push_back( make_pair(t, Scalar(0,255,255)) );
 	}
 
 
-	namedWindow("1");
-	imshow("1", sceen);
-
-	ss<<imageNames[3][0];
+	ss<<imageNames[3][0]<<" fisished~";
 	
 	CEdit* pBoxOne;
 	pBoxOne = (CEdit*) GetDlgItem(IDC_EDIT2);
@@ -263,6 +263,7 @@ void CRecognitionSystemDlg::OnBnClickedButton1()
 	CString cs = CString( sss.c_str() );
 	pBoxOne->SetWindowText( cs );
 
+	OnBnClickedButtonOpen();
 	// TODO: 在此添加控件通知处理程序代码
 }
 
@@ -299,4 +300,30 @@ void CRecognitionSystemDlg::OnBnClickedButton3()
 	int _day = min(_wtoi(cs) + 1, 365);
 	cs.Format( _T("%d"), _day);
 	((CComboBox*)GetDlgItem(IDC_EDIT1))->SetWindowText( cs );
+}
+
+
+
+void CRecognitionSystemDlg::OnBnClickedButtonOpen()
+{
+	// TODO: 在此添加控件通知处理程序代码	
+	ParsePars(pars);
+	stringstream ss;
+	int wave=0, day=3;
+	wave = atoi( pars["modal"].c_str() );
+	day =  atoi( pars["day"].c_str() );
+	cv::Mat img = cv::imread( pars["imagepath"] + "//" + imageNames[day][ wave ] );
+	cv::Mat sceen;
+	cv::resize(img, sceen, Size(512,512) );
+
+	for (  auto t : result ){
+		rectangle(sceen, Rect(t.first.x/8, t.first.y/8, t.first.width/8, t.first.height/8 ), t.second );
+	}
+
+
+	cv::namedWindow("1");
+	cv::imshow("1", sceen);
+
+
+
 }

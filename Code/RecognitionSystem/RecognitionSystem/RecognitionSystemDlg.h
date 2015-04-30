@@ -12,6 +12,16 @@ using namespace std;
 
 
 
+#include "func.h"
+#include "sift_bow.h"
+#include "lbp.h"
+#include "Feature.h"
+
+#include "Recognition.h"
+#include "test.h"
+
+
+
 // CRecognitionSystemDlg 对话框
 class CRecognitionSystemDlg : public CDialogEx
 {
@@ -20,6 +30,7 @@ public:
 	map<string, string> pars;
 	vector< vector<string> > imageNames;
 	void CRecognitionSystemDlg::ParsePars(map<string,string>&pars);
+	vector< pair<Rect, Scalar> > result;
 // 构造
 public:
 	CRecognitionSystemDlg(CWnd* pParent = NULL);	// 标准构造函数
@@ -46,4 +57,5 @@ public:
 	afx_msg void OnBnClickedButton4();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedButtonOpen();
 };

@@ -42,6 +42,7 @@ errPCA=knncl(L0(1:3,:),xTr, yTr,xTe,yTe,1);fprintf('\n');
 fprintf('\n')
 disp('Learning initial metric with LMNN ...')
 [L,~] = lmnn3(xTr, yTr,3,L0,'maxiter',2000,'quiet',1,'outdim',3*9,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.05);
+%[L,~] = lmnn3(xTr, yTr,3,L0,'maxiter',2000,'quiet',1,'outdim',3*9,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.05);
 
 %% KNN classification with 3D LMNN metric
 errL=knncl(L,xTr, yTr,xTe,yTe,1);fprintf('\n');

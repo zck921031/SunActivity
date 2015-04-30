@@ -1,6 +1,6 @@
 %输入训练集，测试集，变换矩阵L，线条颜色
 %返回Precision-Recall值
-function [P, R, F1, mAP] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, varargin)
+function [P, R, F1, mAP, ac, ac2] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, varargin)
     color = 'b';
     tt = '';
     if ( nargin == 6 )
@@ -15,7 +15,7 @@ function [P, R, F1, mAP] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, varargi
             end
         end
     end
-    [ P, R, F1, mAP ] = ClassAVGPR( xTrain, yTrain, xTest, yTest, L ); 
+    [ P, R, F1, mAP, ac, ac2 ] = ClassAVGPR( xTrain, yTrain, xTest, yTest, L ); 
     N = size(P, 1);
     x = (1 : N) / N;
     subplot(2, 2, 1);

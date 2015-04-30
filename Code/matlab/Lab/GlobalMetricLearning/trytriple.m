@@ -37,7 +37,7 @@ L = rand(d,D);
 err = 1e9;
 iter = 0;
 
-while( err>1e-5  && iter<1 )
+while( err>1e-5  && iter<40 )
     F = G_hinge2(xTr, L, Sset, Dset, 1, 1);
     F_next = F;
     L_next = L;
