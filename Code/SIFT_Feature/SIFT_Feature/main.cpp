@@ -5,7 +5,7 @@
 
 map<string, string> pars;
 set< string > imageNames;
-
+const bool debug = false;
 
 vector<string> SplitStringByChar( string str, char c ){
 	vector<string> ret;
@@ -92,13 +92,50 @@ Mat load_image(string filename){
 }
 
 
-void genSiftdes(Mat img){
+pair< vector<KeyPoint>, Mat > genSiftdes(Mat _img, float scale = 0.5){
+	Mat img;
+	resize(_img, img, Size(_img.rows*scale, _img.cols*scale) );
+
+	int rows=img.rows, cols=img.cols;
 	SiftFeatureDetector  siftdtc;
 	vector<KeyPoint>kp; 
-	siftdtc.detect(img, kp);
+	Mat mask;
+	mask.create( rows, cols, CV_8UC1);
+	for (int x = 0; x < rows; x++){
+		for (int y = 0; y < cols; y++){
+			if ( x>=256*scale && x<=(4096-2*256)*scale && y>=256*scale && y<=(4096-2*256)*scale )
+				mask.at<uchar>(x, y) = 1;
+			else
+				mask.at<uchar>(x, y) = 0;
+		}
+	}
+
+	//cout<<img.rows<<" "<<img.cols<<endl;
+			
+	siftdtc.detect(img, kp, mask);
+
 	SiftDescriptorExtractor extractor;
 	Mat descriptor;
 	extractor.compute(img, kp, descriptor);
+
+
+	for ( auto &t : kp){
+		t.pt.x /= scale; t.pt.y /= scale;
+	}
+	return make_pair( kp, descriptor );
+}
+
+void write2os(vector<KeyPoint>kp, Mat descriptor, ostream &os = cout ){
+	
+	int N = kp.size(), M = descriptor.cols;
+	for (int i=0; i<N; i++){
+		os<<kp[i].pt.x<<","<<kp[i].pt.y<<","<<kp[i].angle<<","<<kp[i].response<<endl;
+		for (int j=0; j<M; j++){
+			os<<descriptor.at<float>(i,j);
+			if ( j < M-1 ) os<<",";else os<<endl;
+		}
+	}
+
 }
 
 void genDes(){
@@ -106,19 +143,44 @@ void genDes(){
 	sort( begin(existed), end(existed) );
 	for ( string imagefile : imageNames ){
 		string siftfile = imagefile.substr( 0, imagefile.length()-3 ) + "sift";
-		cout<<siftfile<<endl;
-		Mat img = load_image( imagefile );
-		namedWindow("1");
-		imshow("1", img);
 
-		system("pause");
+		if ( binary_search( begin(existed), end(existed), siftfile  ) ){
+			if (debug) {cout<<"skip "<<siftfile<<endl;}
+			continue;
+		}
+
+		cout<<"solve: "<<siftfile<<endl;
+
+		Mat img = Mat(load_image( pars["imagepath"] + imagefile ) );
+		
+		//img = Mat(img, Rect(1600-256, 1600-256, 300+256, 300+256) );
+		auto res = genSiftdes( img, 0.5 );
+		vector<KeyPoint>kp = res.first;
+		Mat descriptor = res.second;
+
+		if ( debug ){
+			
+			//write2os(kp, descriptor);
+			Mat sceen, sceen2;			
+			drawKeypoints(img, kp, sceen);
+			resize(sceen, sceen2, Size(512,512) );
+			namedWindow("1");
+			imshow("1", sceen2);
+			waitKey();
+		}
+		
+		ofstream os( pars["siftpath"] + "//" + siftfile );
+		write2os(kp, descriptor, os);
+		os.close();
+		
+		cout<<" save " << descriptor.rows<<" descriptors "<<endl;
+		//system("pause");
 	}
 
 }
 
 int main()
 {
-	
 
 	init();
 	cout<<imageNames.size()<<endl;
