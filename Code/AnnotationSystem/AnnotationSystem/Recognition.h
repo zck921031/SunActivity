@@ -66,9 +66,6 @@ public:
 			fb.unserialize(w);
 			if ( fb.annotations.empty() ) continue;
 			fb.read_image();
-			//for (int i=0; i<9; i++){
-			//	medianBlur(fb.gray[i], fb.gray[i], 9);
-			//}
 			Mat img;
 			for ( Region r : fb.annotations ){
 				vector<double> x;

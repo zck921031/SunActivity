@@ -1,11 +1,15 @@
 %load feature
-function [xTrain, yTrain, xTest, yTest] = load_feature(concept, modal, feature)
+function [xTrain, yTrain, xTest, yTest, idxTr, idxTe] = load_feature(concept, modal, feature)
     disp( concept);
     disp( modal );
     disp( feature );
+    
+    cntTr = 0; cntTe = 0;
+    idxTr = []; idxTe = [];
+    
     waveNames = {'0094','0131','0171','0193','0211','0304','0335','1600','1700'};
     featureNames = {'colorHist', 'siftHist', 'lbpHist'};
-    addpath(['H:\±ÏÒµÉè¼Æ\', concept, '\feature']);
+    addpath(['C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\AnnotationSystem\feature\', concept]);
     x = [];
     y = csvread('concept.txt');
     for i = 1 : max( size(modal) )
@@ -25,8 +29,12 @@ function [xTrain, yTrain, xTest, yTest] = load_feature(concept, modal, feature)
         if h( find( h == y(i), 1) , 2 ) > 0
             h( find( h == y(i), 1) , 2 ) = h( find( h == y(i), 1) , 2 ) - (1.0 + 1.0/rate );
             mp(i) = 0;
+            cntTr = cntTr + 1;
+            idxTr(cntTr) = i;
         else
             mp(i) = 1;
+            cntTe = cntTe + 1;
+            idxTe(cntTe) = i;
         end
     end
     xTrain = x( find( mp == 0 ), :);

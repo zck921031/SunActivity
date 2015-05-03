@@ -199,7 +199,8 @@ void CRecognitionSystemDlg::myinit()
 {
 	pars["imageNames"] = "C://Users//zck//Documents//GitHub//SunActivity//Code//RecognitionSystem//RecognitionSystem//data//ImageNameByDay.txt";
 	pars["imagepath"] = "C://Users//zck//Documents//GitHub//SunActivity//data//regional annotation//img//";
-	pars["featurepath"] = "C://Users//zck//Documents//GitHub//SunActivity//data//TrainSet//feature//";
+	pars["featurepath"] = "C://Users//zck//Documents//GitHub//SunActivity//Code//AnnotationSystem//AnnotationSystem//feature//";
+	pars["distancepath"] = "C://Users//zck//Documents//GitHub//SunActivity//Code//matlab//Lab//embed//";
 	pars["distanceName"] = "L_mmLMNN.txt";
 	pars["flare"] = "false";
 	pars["CH"] = "false";
@@ -224,6 +225,7 @@ void CRecognitionSystemDlg::myinit()
 	((CButton*)GetDlgItem(IDC_RADIO_Euclidean))->SetCheck(TRUE);
 }
 
+//按下开始识别按钮
 void CRecognitionSystemDlg::OnBnClickedButton1()
 {
 	//cv::Mat img = cv::imread("C://Users//zck//Pictures//样例图片//头像.jpg");
@@ -238,8 +240,8 @@ void CRecognitionSystemDlg::OnBnClickedButton1()
 
 	stringstream ss;
 	Recognition r("flare", pars, 320, 1800);
-	if ( "true" == pars["CH"] ) r = Recognition("CH", pars, 512, 1550);
-	if ( "true" == pars["SS"] ) r = Recognition("SS", pars, 72, 1400);
+	if ( "true" == pars["CH"] ) r = Recognition("Coronal Hole", pars, 512, 1550);
+	if ( "true" == pars["SS"] ) r = Recognition("Sunspot", pars, 72, 1400);
 
 	int wave=0, day=3;
 	wave = atoi( pars["modal"].c_str() );

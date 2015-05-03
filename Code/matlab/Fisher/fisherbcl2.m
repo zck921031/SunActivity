@@ -11,7 +11,7 @@ function [w, b] = fisherbcl(data, label)
             error('input label must in {0, 1}');
         end
     end
-    w1 = data( find( label==0 ), : );
+    w1 = data( find( label~=1 ), : );
     w2 = data( find( label==1 ), : );
     m1=mean(w1);
     m2=mean(w2);

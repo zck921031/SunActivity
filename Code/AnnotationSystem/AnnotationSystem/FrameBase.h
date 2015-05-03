@@ -16,7 +16,7 @@ namespace _AnnotationSystem{
 			return ;
 		}
 		cvtColor(*img, *gray, CV_BGR2GRAY);
-		medianBlur( *gray, *gray, 9);
+		medianBlur( *gray, *gray, 7);
 		*success = true;
 	}
 };

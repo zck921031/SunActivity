@@ -87,14 +87,14 @@ Mat load_image(string filename){
 	Mat img = imread( filename.c_str() );
 	Mat gray;
 	cvtColor(img, gray, CV_BGR2GRAY);
-	medianBlur( gray, gray, 9);
+	medianBlur( gray, gray, 7);
 	return gray;
 }
 
 
 pair< vector<KeyPoint>, Mat > genSiftdes(Mat _img, float scale = 0.5){
 	Mat img;
-	resize(_img, img, Size(_img.rows*scale, _img.cols*scale) );
+	resize(_img, img, Size(_img.cols*scale, _img.rows*scale) );
 
 	int rows=img.rows, cols=img.cols;
 	SiftFeatureDetector  siftdtc;

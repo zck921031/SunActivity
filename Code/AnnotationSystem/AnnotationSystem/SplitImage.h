@@ -24,7 +24,6 @@ public:
 		ofstream outexp;
 		outexp.open("img//source.txt");
 		_mkdir("img");
-		map<string, int> cnt;
 		for (string w : imgnames ){
 			FrameBase fb;
 			fb.setPath("..//..//..//data//regional annotation//img//");
@@ -51,7 +50,7 @@ public:
 			cout<<w.substr(0,8)<<endl;
 
 			for ( Region r : fb.annotations ){
-				int id = ++cnt[ r.concept ];
+				int id = ++CNT[ r.concept ];
 				for (int i=0; i<9; i++){
 					img = Mat( fb.src[i], Rect(r.left, r.up, r.right-r.left, r.down-r.up) );
 					string filename = "img//"+r.concept;

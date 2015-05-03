@@ -28,7 +28,8 @@ const string WaveNames[] = {"0094","0131","0171","0193","0211","0304","0335","16
 //const string CONCEPT = "Sunspot";
 //const string CONCEPT = "Flare";
 //const string CONCEPT = "Prominences";
-const string CONCEPT = "Filament";
+string CONCEPT = "Filament";
+map<string, int> CNT;
 
 
 vector<string> SplitStringByChar( string str, char c ){
@@ -75,6 +76,6 @@ Mat load_image(string filename){
 	Mat img = imread( filename.c_str() );
 	Mat gray;
 	cvtColor(img, gray, CV_BGR2GRAY);
-	medianBlur( gray, gray, 9);
+	medianBlur( gray, gray, 7);
 	return gray;
 }

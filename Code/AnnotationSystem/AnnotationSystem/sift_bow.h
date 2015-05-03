@@ -136,9 +136,11 @@ public:
 	~Sift_BOW(){
 		descs.clear();
 	}
-	void addimage(Mat img){	
+	void addimage(Mat img){
+
 		SiftFeatureDetector  siftdtc;
-		vector<KeyPoint>kp; 
+		vector<KeyPoint>kp;
+
 		siftdtc.detect(img, kp);
 		SiftDescriptorExtractor extractor;
 		Mat descriptor;
@@ -146,13 +148,19 @@ public:
 		//put the result of input image to vector<Mat>
 		descs.push_back( descriptor.clone() );
 		total += descriptor.rows;
+
+//Mat sceen;
+//namedWindow("2");imshow("2", img);
+//drawKeypoints(img,kp,sceen);namedWindow("3");imshow("3", sceen);
+//waitKey();
+
 	}
 
 	/*
 	 * input: ClusterNum, number of cluster centers
 	 * output: really number of cluster centers
 	 */
-	int cluster(int ClusterNum = 30){
+	int cluster(int ClusterNum = 50){
 		if ( total < ClusterNum ){
 			ofstream err;
 			err.open("feature//err.log");

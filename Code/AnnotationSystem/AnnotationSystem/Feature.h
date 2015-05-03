@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "lbp.h"
 #include "sift_bow.h"
+#include <direct.h>
 
 vector<double> ColorHist(const Mat &img, int N = 16){
 	vector<double>cnt(256/N,0);
@@ -32,13 +33,16 @@ void println( vector<TP> x, ofstream& os ){
 }
 
 
-int genFeature(  ){
-	string path = "feature//";
+int genFeature( vector<int> cnt ){
+	string path = "feature//"+CONCEPT + "//";
+	_mkdir( path.c_str() );
 	string concepts[] = {CONCEPT, "No"+CONCEPT };
-	int cnt[] = {30, 40};
 	//int cnt[] = {3, 3};
 	int total = 0;for (auto t:cnt) total+=t;
-
+	if ( !total ){
+		cout<<"No image need to be processed."<<endl;
+		return -1;
+	}
 	
 	for (string wave : WaveNames ){		
 		for ( int c=0; c<2; c++ ){			

@@ -12,7 +12,7 @@ class Recognition{
 	int size, board;
 public:
 	string RealPath(string prefix){
-		return prefix + "//" + Concept+"_No"+Concept + "//feature//";
+		return prefix + "//" + Concept + "//";
 	}
 	vector<double> project(const vector<double>&x_origin, const vector< vector<double> >&L ){
 		if ( L.empty() ) return x_origin;
@@ -37,7 +37,9 @@ public:
 
 		L.clear();
 		if ( "Euclidean" != pars["distanceName"] ){
-			L = csvread(realpath + "//" + pars["distanceName"] );
+			string distanceName = "mmLMNN_" + Concept + ".txt";
+
+			L = csvread(pars["distancepath"] + "//" + distanceName );
 			for (int i=xTr.size()-1; i>=0; i--){
 				xTr[i] = project(xTr[i], L);
 			}
@@ -76,7 +78,11 @@ public:
 		return sump < 1.0*sumn;
 	}
 
-	vector<double> genMMfeature(Mat img, Sift_BOW sift_bow){
+	vector<double> genMMfeature(Mat _img, Sift_BOW sift_bow){
+		//!for speed up
+		Mat img;
+		resize(_img, img, Size(_img.cols/4, _img.rows/4) );
+
 		vector<double> h, res;
 
 		res = ColorHist(img);

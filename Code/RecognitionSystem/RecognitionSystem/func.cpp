@@ -66,6 +66,6 @@ Mat load_image(string filename){
 	Mat img = imread( filename.c_str() );
 	Mat gray;
 	cvtColor(img, gray, CV_BGR2GRAY);
-	medianBlur( gray, gray, 9);
+	medianBlur( gray, gray, 7);
 	return gray;
 }

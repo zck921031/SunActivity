@@ -46,25 +46,46 @@ int main(){
 	test();
 	cout<<"hello world"<<endl;
 
-	AnnotationGui t;
-	t.start(5);
+	//AnnotationGui t;
+	//t.start(5);
+	return 0;
 
-	SplitImage si;
+	string workers[] = {"Sunspot", "Prominences", "Coronal Hole", "Flare" };
+	//string workers[] = { "Flare" };
 	set<string> cocept;
-	cocept.insert(CONCEPT);
-	cocept.insert("No"+CONCEPT);
 
+	for  ( auto __CONCEPT__ : workers ){
+		cocept.insert(__CONCEPT__);
+		cocept.insert("No"+__CONCEPT__);
+	}
+
+	//SplitImage si;
 	//si.work( cocept );
 
-	//Reco reco;
-	//reco.GenFeatureToTxt();
-	//reco.ReadFeatureFromTxt();
+		//Reco reco;
+		//reco.GenFeatureToTxt();
+		//reco.ReadFeatureFromTxt();
 
-	//__LBP::test();
+		//__LBP::test();
 
-	//__SIFT_BOW::teddytest();
+		//__SIFT_BOW::teddytest();
 	
-	//genFeature();
+	CNT["Flare"] = 470;
+	CNT["NoFlare"] = 509;
+	CNT["Sunspot"] = 72;
+	CNT["NoSunspot"] = 122;
+	CNT["Prominences"] = 30;
+	CNT["NoProminences"] = 40;
+	CNT["Coronal Hole"] = 108;
+	CNT["NoCoronal Hole"] = 125;
+
+	for  ( auto __CONCEPT__ : workers ){
+		CONCEPT = __CONCEPT__;
+		vector<int> cnt;
+		cnt.push_back( CNT[CONCEPT] );
+		cnt.push_back( CNT["No"+CONCEPT] );
+		//genFeature(cnt);
+	}
 
 	system("pause");
 

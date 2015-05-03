@@ -25,12 +25,17 @@ function [ P, R, F1, mAP, accuracy, ac2 ] = ClassAVGPR(xTrain, yTrain, xTest, yT
                 T = T+1;
             else
                 F = F+1;
+                
+                %disp(i);
+                
             end
         else
             if dist(i)/cntP >= distN(i)/cntN
                 T = T+1;
             else
-                F = F+1;
+                
+                F = F+1;                
+                
             end            
         end        
     end
@@ -50,6 +55,9 @@ function [ P, R, F1, mAP, accuracy, ac2 ] = ClassAVGPR(xTrain, yTrain, xTest, yT
             FN = FN-1;
             mAP = mAP + TP/( (TP+FP)*(TP+FN) );
         else
+            
+                %disp( idx(k) );
+                
             FP = FP+1;
             TN = TN-1;
         end
