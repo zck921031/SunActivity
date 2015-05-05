@@ -2,11 +2,13 @@
 clc;
 clear;
 close all;
-%addpath '../JointDistributionLMNN';
+
+islearning = 0;
+
 addpath('../func');
-[xTrain, yTrain, xTest, yTest] = load_feature('SS_NoSS', 1:9, 1:3);
-%[xTrain, yTrain, xTest, yTest] = load_feature('CH_NoCH', 1:9, 1:3);
-%[xTrain, yTrain, xTest, yTest] = load_feature('flare_Noflare', 1:9, 1:3);
+%[xTrain, yTrain, xTest, yTest] = load_feature('Sunspot', 1:9, 1:3);
+%[xTrain, yTrain, xTest, yTest] = load_feature('Coronal Hole', 1:9, 1:3);
+[xTrain, yTrain, xTest, yTest] = load_feature('flare', 1:9, 1:3);
 
 xTrain = xTrain;
 xTest = xTest;
@@ -39,7 +41,7 @@ L = L/norm(L);
 err = 1e9;
 iter = 0;
 
-while( err>1e-5  && iter<400 )
+while( err>1e-5 && islearning ~= 0 && iter<400 )
     F = G_hinge2(xTr, L, Sset, Dset, 1, 1);
 %     F_next = F;
 %     L_next = L;
@@ -79,6 +81,13 @@ while( err>1e-5  && iter<400 )
     [~,~,~,mAP,ac,ac2] = ClassAVGPR(xTrain, yTrain, xTest, yTest, L );
     disp( ['²âÊÔ¼¯ iters: ', num2str(iter),' F: ', num2str(F), ' norm: ', num2str( norm(L,2) ) , ' mAP: ' , num2str(mAP),' ac: ', num2str(ac) , ' ac2: ', num2str(ac2) ]  );
     
+end
+
+
+if 0 ~= islearning
+    save L_try_sto L;
+else
+    load L_try_sto;
 end
 
 subplot(1,2,1);

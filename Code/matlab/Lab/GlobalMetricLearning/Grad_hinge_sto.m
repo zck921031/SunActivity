@@ -1,9 +1,8 @@
 %
-function [grad] = Grad_hinge_sto(xTr, L, i, j, u)
+function [grad] = Grad_hinge_sto(xi, xj, L, u)
     grad = zeros( size(L) );
-    x = L*xTr;
-    t = x(:,i)-x(:,j);
-    v = xTr(:,i)-xTr(:,j);
+    t = L*(xi - xj);
+    v = xi - xj;
     sgn = 0;
     if 1 == u
         sgn = 1;

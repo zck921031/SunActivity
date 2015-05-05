@@ -68,6 +68,8 @@
   <ItemGroup>
     <ClInclude Include="func.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="sto_pair.h" />
+    <ClInclude Include="sto_triple.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -120,3 +120,5 @@ int genFeature( vector<int> cnt ){
 	cout<<"finished~"<<endl;
 	return 0;
 }
+
+//void genFeature2( string workers[], int cnt[] )

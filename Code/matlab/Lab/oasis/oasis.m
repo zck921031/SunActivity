@@ -1,4 +1,4 @@
-function model = oasis(data, class_labels, parms)
+function model = oasis(data, class_labels, parms, varargin)
 % model = oasis(data, class_labels, parms)
 %
 % Code version 1.3 May 2011 Fixed random seed setting
@@ -48,9 +48,13 @@ function model = oasis(data, class_labels, parms)
 % similarity through ranking, J. Machine learning Research 2010.
 % 
 % (C) 2008-2010 Gal Chechik, Uri Shalit. 
-
+  
   [N,dim] = size(data);
-  W = eye(dim);
+  if nargin <= 3
+    W = eye(dim);
+  else
+    W = varargin{1};
+  end
   [unused_values, inds] = sort(class_labels); %#ok
   class_labels = class_labels(inds);
   data = data(inds,:);

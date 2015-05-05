@@ -18,5 +18,12 @@ double distance2(const vector<double>&x, const vector<double>&y);
 int classify(vector< vector<double> >xTr , vector<int>yTr,
 				vector<double>xTe, const vector< vector<double> >&L, bool isprojected = false);
 
-void retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
+double retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
 				  vector< vector<double> >xTe , vector<int>yTe, const vector< vector<double> >&L);
+
+
+double norm(const vector< vector<double> > & g);
+
+
+int classify_knn(vector< vector<double> >xTr , vector<int>yTr, const vector<double>&xTe, int K = 5);
+

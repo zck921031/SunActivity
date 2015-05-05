@@ -29,5 +29,11 @@
     <ClInclude Include="func.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="sto_triple.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sto_pair.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

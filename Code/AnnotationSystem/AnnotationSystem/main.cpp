@@ -50,13 +50,13 @@ int main(){
 	//t.start(5);
 	return 0;
 
-	string workers[] = {"Sunspot", "Prominences", "Coronal Hole", "Flare" };
-	//string workers[] = { "Flare" };
+	//string workers[] = {"Sunspot", "Prominences", "Coronal Hole", "Flare" };
+	string workers[] = { "Flare", "Coronal Hole", "Sunspot" };
 	set<string> cocept;
 
 	for  ( auto __CONCEPT__ : workers ){
 		cocept.insert(__CONCEPT__);
-		cocept.insert("No"+__CONCEPT__);
+		//cocept.insert("No"+__CONCEPT__);
 	}
 
 	//SplitImage si;

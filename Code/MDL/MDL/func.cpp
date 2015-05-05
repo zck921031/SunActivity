@@ -96,7 +96,7 @@ vector< vector<double> > csvread(string filename){
 
 
 string RealPath(string prefix){
-	return prefix + "//" + Concept+"_No"+Concept + "//feature//";
+	return prefix + "//" + Concept + "//";
 }
 
 
@@ -173,7 +173,7 @@ int classify(vector< vector<double> >xTr , vector<int>yTr,
 }
 
 
-int classify_knn(vector< vector<double> >xTr , vector<int>yTr, const vector<double>&xTe){	
+int classify_knn(vector< vector<double> >xTr , vector<int>yTr, const vector<double>&xTe, int K){
 	int N = xTr.size();
 	vector< pair<double,int> > dist(N);
 	for (int i=0; i<N; i++){
@@ -181,7 +181,6 @@ int classify_knn(vector< vector<double> >xTr , vector<int>yTr, const vector<doub
 		dist[i].second = yTr[i];
 	}
 	sort( begin(dist), end(dist) );
-	int K = 5;
 	map<int,int> mp;
 	int ret = -1, best = -1;
 	for (int i=0; i<K; i++){
@@ -194,9 +193,9 @@ int classify_knn(vector< vector<double> >xTr , vector<int>yTr, const vector<doub
 	return ret;
 }
 
-void retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
+double retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
 				  vector< vector<double> >xTe , vector<int>yTe, const vector< vector<double> >&L){
-	
+	double ret;
 
 	for ( auto &x : xTr){ x = project(x, L); }
 	for ( auto &x : xTe){ x = project(x, L); }
@@ -220,6 +219,7 @@ void retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
 			F += 1;
 		}
 	}
+	ret = T/(F+T)*100;
 	cout<<"5-NN正确率: "<<T/(F+T)*100<<"%"<<endl;
 
 	double sumP=0, sumN=0;
@@ -238,7 +238,7 @@ void retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
 	sumP=sumN=0;
 	for (int i=xTe.size()-1; i>=0; i--){
 		for (int j=xTe.size()-1; j>=0; j--){
-			if ( yTr[i] == yTr[j] ){
+			if ( yTe[i] == yTe[j] ){
 				sumP += distance2(xTe[i], xTe[j]);
 			}else{
 				sumN += distance2(xTe[i], xTe[j]);
@@ -246,5 +246,18 @@ void retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
 		}
 	}
 	cout<<"测试集相关/非相关距离平方和: "<<sumP<<" , "<<sumN<<endl;
-
+	return ret;
 }
+
+
+double norm(const vector< vector<double> > & g){
+	double sum = 0;
+	for (auto &i : g){
+		for (auto &t : i){
+			sum = sum + t*t;
+		}
+	}
+	return sqrt(sum);
+}
+
+
