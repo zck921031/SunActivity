@@ -7,13 +7,11 @@ close all
 
 addpath '../func';
 %% Load data 
-%[xTrain, yTrain, xTest, yTest] = load_feature('Flare_NoFlare', 1:9, 1:3);
-%[xTrain, yTrain, xTest, yTest] = load_feature_sift('SS_NoSS');
-[xTrain, yTrain, xTest, yTest] = load_feature('CH_NoCH', 1:9, 1:3);
-%[xTrain, yTrain, xTest, yTest] = load_feature_lbp('SS_NoSS');
 
-%xTrain = xTrain*256;
-%xTest = xTest*256;
+% {'Sunspot', 'Coronal Hole', 'Flare'}
+Concept = 'Flare';
+[xTrain, yTrain, xTest, yTest] = load_feature( Concept, 1:9, 1:3);
+
 
 yTrain( find(yTrain== -1) ) = 0;
 yTest ( find(yTest == -1) ) = 0;
@@ -21,8 +19,8 @@ yTest ( find(yTest == -1) ) = 0;
 D = size(xTrain, 2);
 
 %wave = 1;
-xTr = xTrain(:, :)'; yTr = yTrain';
-xTe = xTest (:, :)'; yTe = yTest';
+xTr = xTrain'; yTr = yTrain';
+xTe = xTest'; yTe = yTest';
 
 
 cd '../../lmnn';
@@ -76,6 +74,7 @@ disp(['1-NN Error for raw (high dimensional) input is : ',num2str(100*errRAW(2)
 disp(['1-NN Error after PCA in 3d is : ',num2str(100*errPCA(2),3),'%']);
 disp(['1-NN Error after LMNN in 3d is : ',num2str(100*errL(2),3),'%']);
 
+cd ../lab/embed;
 figure(6);
 mAP = [];
 [~,~,~,mAP(1)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'color', 'b', 'title', 'Sunspot' );
@@ -87,5 +86,4 @@ for i = 1 : 3
     set(h,'box','off')
 end
 
-cd ../lab/embed;
-save LMNN_L_ L;
+save 'LMNN_Flare' L;

@@ -8,32 +8,27 @@ addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\lmnn\helperfuncti
 addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\lmnn';
 
 % {'Sunspot', 'Coronal Hole', 'Flare'}
-Concept = 'Coronal Hole';
-[ xTr, yTr, xTe, yTe ] = load_feature( Concept, 1:9, 1:3);
-% cd 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\Lab\NUS';
+Concept = 'Flare';
+[ xTrain, yTrain, xTest, yTest ] = load_feature( Concept, 1:9, 1:3);
 
-xTr = xTr'; yTr = yTr';
-xTe = xTe'; yTe = yTe';
+%p = randperm( size(xTrain,1) );
+%xTrain = xTrain( p(1:30), : );
+%yTrain = yTrain( p(1:30) );
 
-[D, N] = size(xTr);
+% xTr = xTr'; yTr = yTr';
+% xTe = xTe'; yTe = yTe';
+
+[D, N] = size(xTrain);
+
 
 tic
-addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\Lab\NUS';
-parms.use_matlab = 1;
-parms.do_save = 0;
-L = eye(D,D);
-for cc = 1 : 10
-    parms.num_steps = 1e3;
-    obj = oasis(xTr', yTr', parms, L'*L );
-    
-    L = LU(obj.W);
 
-    errRAW = knncl( [], L*xTr, yTr, L*xTe, yTe, 1);
-    disp( ['pair_sto_con knn train error rate: ' num2str(errRAW(1) ) ] );
-    disp( ['pair_sto_con knn test  error rate: ' num2str(errRAW(2) ) ] );
-end
+svmStruct1=svmtrain( xTrain, yTrain, 'showplot',false );
+C = svmclassify(svmStruct1, xTrain, 'showplot',false) ;
+disp( ['train正确率是' num2str(  sum( C==yTrain ) / size(xTrain,1) ) ] );
+C = svmclassify(svmStruct1, xTest, 'showplot',false) ;
+disp( ['test 正确率是' num2str(  sum( C==yTest ) / size(xTest,1) ) ] );
+
 usedtime = toc;
 
 disp( ['Elapsed time is ' num2str(usedtime) ' seconds' ] );
-
-save OASIS_CH L usedtime;

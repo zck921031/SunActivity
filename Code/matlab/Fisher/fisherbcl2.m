@@ -38,6 +38,7 @@ function [w, b] = fisherbcl(data, label)
     b = -(ave_m1+ave_m2)/2;
     
     yp = (data*w+b) < 0;
-    disp( [ 'fisher训练正确率' , num2str(sum(yp == label)/N) ] );
+	
+    % disp( [ 'fisher训练正确率' , num2str(sum(yp == label)/N) ] );
     
 end
