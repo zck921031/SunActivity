@@ -10,7 +10,7 @@ addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\Lab\oasis';
 % [ xTr, yTr, xTe, yTe ] = load_feature('Sunspot', 1:9, 1:3);
 % cd 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\Lab\NUS';
 
-[ xTr, yTr, xTe, yTe ] = load_feature();
+[ xTr, yTr, xTe, yTe ] = load_feature_nus500();
 xTr = xTr'; yTr = yTr';
 xTe = xTe'; yTe = yTe';
 
@@ -20,8 +20,8 @@ tic
 parms.use_matlab = 1;
 parms.do_save = 0;
 L = eye(D,D);
-for cc = 1 : 1
-    parms.num_steps = 1e5*cc;
+for cc = 1 : 10
+    parms.num_steps = 1e4;
     obj = oasis(xTr', yTr', parms, L );
     
     L = LU(obj.W);

@@ -8,8 +8,11 @@ addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\lmnn\helperfuncti
 addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\lmnn';
 
 % {'Sunspot', 'Coronal Hole', 'Flare'}
-Concept = 'Flare';
-[ xTrain, yTrain, xTest, yTest ] = load_feature( Concept, 1:9, 1:3);
+% Concept = 'Flare';
+% [ xTrain, yTrain, xTest, yTest ] = load_feature( Concept, 1:9, 1:3);
+
+addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\AnnotationSystem\feature\ox5';
+[xTrain, yTrain, xTest, yTest] =  load_feature_ox5(1:3);
 
 %p = randperm( size(xTrain,1) );
 %xTrain = xTrain( p(1:30), : );
@@ -23,6 +26,8 @@ Concept = 'Flare';
 
 tic
 
+yTrain = yTrain==1;
+yTest = yTest==1;
 svmStruct1=svmtrain( xTrain, yTrain, 'showplot',false );
 C = svmclassify(svmStruct1, xTrain, 'showplot',false) ;
 disp( ['train正确率是' num2str(  sum( C==yTrain ) / size(xTrain,1) ) ] );

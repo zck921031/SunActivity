@@ -1,4 +1,4 @@
-function [L,Det]=lmnn3(x,y,varargin)
+function [L,Det]=lmnn4(x,y,varargin)
 % function [L,Det]=lmnn3(x,y,Kg,'Parameter1',Value1,'Parameter2',Value2,...);
 %
 % Input:
@@ -84,7 +84,7 @@ if(exist('L','var')~=1)
     %fprintf(['Initial starting point not specified.\nStarting with PCA.\n']);  
  	L=pca(x)';
 else
-	pars.outdim=size(L,1);	
+	pars.outdim=size(L,1);
 end;
 tic
 
@@ -97,6 +97,7 @@ if(size(x,1)>length(L)) error('x and L must have matching dimensions!\n');end;
 
  % set parameters
  pars.modal=1;
+ pars.Lpart = [];
  pars.diagonal=0;
  pars.stepsize=1e-09;
  pars.minstepsize=0;
@@ -137,7 +138,7 @@ if ( rem(pars.outdim, pars.modal ) ~= 0 )
 end
 
 if isstruct(pars.pars), pars=pars.pars;end;
-if(~pars.quiet),fprintf('mmLMNN lab version\n');end;
+if(~pars.quiet),fprintf('LMNN stable version 2.6.0\n');end;
 if pars.diagonal, pars.obj=2;L=eye(size(L)); end;
 %disp( pars.obj );
 
@@ -153,8 +154,8 @@ if isempty(pars.valindex),
     [itr,ite]=makesplits(y,1-pars.validation_,1,pars.classsplit,Kg+1,pars.valrand);
 else
     pars.validation_=0.2;
-    ite=find( ismember(1:length(y),pars.valindex) );
-    itr=find( ~ismember(1:length(y),pars.valindex) );
+    ite=find(ismember(1:length(y),pars.valindex));
+    itr=find(~ismember(1:length(y),pars.valindex));
 end;
 
 if pars.validation>0,
@@ -233,9 +234,9 @@ stepsize=pars.stepsize;
 df=zeros(size(dfG));
 imp=zeros(2,0);
 
+%% Main Loop
 Det.log.L = {};
 Det.log.usedtime = {};
-%% Main Loop
 for iter=1:pars.maxiter
  if rem(iter, 100) == 0
      Det.log.L{ uint8( iter/100 ) } = L;
@@ -310,15 +311,7 @@ for iter=1:pars.maxiter
  % increase stepsize if it makes good progress, otherwise decrease
  if(iter>1 & delta>0 & correction~=pars.correction) 
   stepsize=stepsize*0.5;
-%     weight = [];
-%     for modal = 1 : 9
-%         weight(modal) = norm( L( 3*(modal-1)+1 : 3*modal, 125*(modal-1)+1 : 125*modal ) );
-%         L( 3*(modal-1)+1 : 3*modal, 125*(modal-1)+1 : 125*modal ) = L( 3*(modal-1)+1 : 3*modal, 125*(modal-1)+1 : 125*modal ) * weight(modal);
-%     end
-  if(~pars.quiet)
-      fprintf('***correcting stepsize***\n');      
-      % disp(weight); 
-  end;
+  if(~pars.quiet)fprintf('***correcting stepsize***\n');end;
   if(stepsize<pars.minstepsize) stepsize=pars.minstepsize;end;
   if(~pars.aggressive)
    L=Lold;
@@ -429,7 +422,7 @@ switch(pars.obj)
      dd=dd(ii);
      L=(L*diag(sqrt(dd)))';
      
-     L = fixL(L);
+     L = fixL(L, pars);
      
    case 1   % updating L
      G=2.*(L*G);
@@ -450,17 +443,25 @@ end;
 
 
 function [mmL] = fixL(L, pars)
- srow = pars.outdim / pars.modal;
- scol = size(L, 2) / pars.modal;     
- mmL  = zeros( size(L) );
- for modal = 1 : pars.modal
-    for i = srow * ( modal - 1 ) + 1 : srow * modal
-        for j = scol * ( modal - 1 ) + 1 : scol * modal
-            mmL(i,j) = L(i,j);
-        end
-    end
- end
+%  srow = pars.outdim / pars.modal;
+%  scol = size(L, 2) / pars.modal;     
+%  mmL  = zeros( size(L) );
+%  for modal = 1 : pars.modal
+%     for i = srow * ( modal - 1 ) + 1 : srow * modal
+%         for j = scol * ( modal - 1 ) + 1 : scol * modal
+%             mmL(i,j) = L(i,j);
+%         end
+%     end
+%  end
 
+ mmL  = zeros( size(L) );
+ for cc = 1 : length( pars.Lpart )
+     for i = pars.Lpart(cc, 1) : pars.Lpart(cc, 2)
+         for j = pars.Lpart(cc, 1) : pars.Lpart(cc, 2)
+             mmL(i,j) = L(i,j);
+         end
+     end
+ end
 
 
 

@@ -48,7 +48,7 @@ int main(){
 
 	//AnnotationGui t;
 	//t.start(5);
-	return 0;
+	//return 0;
 
 	//string workers[] = {"Sunspot", "Prominences", "Coronal Hole", "Flare" };
 	string workers[] = { "Flare", "Coronal Hole", "Sunspot" };
@@ -86,6 +86,8 @@ int main(){
 		cnt.push_back( CNT["No"+CONCEPT] );
 		//genFeature(cnt);
 	}
+	
+	//genFeature3();
 
 	system("pause");
 

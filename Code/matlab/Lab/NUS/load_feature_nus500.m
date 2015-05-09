@@ -1,15 +1,6 @@
 %% NUS-WIDE data set, 
-function [xTrain, yTrain, xTest, yTest] = load_feature()
-    load nus-dataset;
-    idx = [ find( yTrain <= 31 ) ];
-    idx = [ find( yTrain == 8 ) ; find( yTrain == 9 ) ];
-    xTrain = xTrain( idx, : );
-    yTrain = yTrain( idx );
-    
-    idx = [ find(yTest <= 31 ) ];    
-    idx = [ find( yTest == 8 ) ; find( yTest == 9 ) ];
-    xTest = xTest( idx, : );
-    yTest = yTest( idx );
+function [xTrain, yTrain, xTest, yTest] = load_feature_nus500()
+    load nus500;    
 end
 
 % function [xTrain, yTrain, xTest, yTest] = load_feature()

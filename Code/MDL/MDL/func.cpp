@@ -59,6 +59,56 @@ void load_feature( string path, vector< vector<double> >&xTr , vector<int>&yTr,
 
 }
 
+void load_feature_ox5( string path, vector< vector<double> >&xTr , vector<int>&yTr,
+				  vector< vector<double> >&xTe, vector<int>&yTe, double ratio ){
+	vector< vector<double> > xtmp;
+	vector<int> ytmp;
+	map<int,int> ycnt;
+	ifstream is(path + "//concept.txt");
+	{
+		int t;
+		while( is>>t ){
+			ytmp.push_back(t);
+			ycnt[t]++;
+		}
+	}
+	for ( auto &it : ycnt ){
+		it.second = (int)ceil( it.second * ratio );
+	}
+	int N = ytmp.size();
+	xtmp = vector< vector<double> >(N);
+	vector<bool> skip(N, 0);
+	for (int i=0; i<N; i++){
+		if ( ycnt[ ytmp[i] ]-- <= 0 ) skip[i] = true;
+		else skip[i] = false;
+	}
+
+
+	for ( string ftype : featureType )
+	{
+		string filename = path + "//" + ftype + ".txt";
+		vector< vector<double> > g = csvread( filename );
+		assert( N == g.size() );
+		for (int i=0; i<N; i++){
+			for ( auto t : g[i] ){
+				xtmp[i].push_back(t);
+			}
+		}
+	}
+
+	xTr.clear(), yTr.clear();
+	xTe.clear(), yTe.clear();
+	for (int i=0; i<N; i++){
+		if ( !skip[i] ){
+			xTr.push_back( xtmp[i] );
+			yTr.push_back( ytmp[i] );
+		}else{
+			xTe.push_back( xtmp[i] );
+			yTe.push_back( ytmp[i] );
+		}
+	}
+
+}
 
 
 vector<string> SplitStringByChar( string str, char c ){
@@ -202,25 +252,25 @@ double retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
 	
 
 	double TP=0, FN=0, FP=0, TN=0, T=0, F=0;
-	for (int i = xTe.size()-1; i>=0; i--){
-		if ( classify(xTr, yTr, xTe[i], L, true ) == yTe[i] ){
-			T += 1;
-		}else{
-			F += 1;
-		}
-	}
-	cout<<"类平均法正确率: "<<T/(F+T)*100<<"%"<<endl;
+	//for (int i = xTe.size()-1; i>=0; i--){
+	//	if ( classify(xTr, yTr, xTe[i], L, true ) == yTe[i] ){
+	//		T += 1;
+	//	}else{
+	//		F += 1;
+	//	}
+	//}
+	//cout<<"类平均法正确率: "<<T/(F+T)*100<<"%"<<endl;
 
 	T=F=0;
 	for (int i = xTe.size()-1; i>=0; i--){
-		if ( classify_knn(xTr, yTr, xTe[i] ) == yTe[i] ){
+		if ( classify_knn(xTr, yTr, xTe[i], 1 ) == yTe[i] ){
 			T += 1;
 		}else{
 			F += 1;
 		}
 	}
 	ret = T/(F+T)*100;
-	cout<<"5-NN正确率: "<<T/(F+T)*100<<"%"<<endl;
+	cout<<"1-NN正确率: "<<T/(F+T)*100<<"%"<<endl;
 
 	double sumP=0, sumN=0;
 	for (int i=xTr.size()-1; i>=0; i--){

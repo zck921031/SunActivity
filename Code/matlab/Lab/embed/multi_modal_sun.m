@@ -8,7 +8,7 @@ close all
 addpath '../func';
 %% Load data 
 % {'Sunspot', 'Coronal Hole', 'Flare'}
-Concept = 'Flare';
+Concept = 'Coronal Hole';
 [xTrain, yTrain, xTest, yTest] = load_feature( Concept, 1:9, 1:3 );
 
 %xTrain = xTrain*256;
@@ -41,7 +41,7 @@ errPCA=knncl(L0(1:3,:),xTr, yTr,xTe,yTe,1);fprintf('\n');
 
 %% Use LMNN for dimensionality reduction
 fprintf('\n')
-disp('Learning initial metric with LMNN ...');
+disp('Learning initial metric with mmLMNN ...');
 %L0 = eye(D,D);
 
 %part = [ 1, 16; 16+1, 16+200; 16+200+1, 16+200+59 ];
@@ -57,22 +57,9 @@ errL=knncl(L,xTr, yTr,xTe,yTe,1);fprintf('\n');
 %% Final Results
 disp('Dimensionality Reduction Demo:');
 %disp(['Under wave: ', num2str(wave)]);
-disp(['1-NN Error for raw (high dimensional) input is : ',num2str(100*errRAW(2),3),'%']);
+disp(['1-NN Error for raw(high dimensional) input is : ',num2str(100*errRAW(2),3),'%']);
 disp(['1-NN Error after PCA in 3d is : ',num2str(100*errPCA(2),3),'%']);
 disp(['1-NN Error after LMNN in 3d is : ',num2str(100*errL(2),3),'%']);
-
-
-% addpath '../lab/func';
-% figure(6);
-% mAP = [];
-% [~,~,~,mAP(1)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, eye( size(xTrain,2), size(xTrain,2) ), 'color', 'b', 'title', Concept );
-% [~,~,~,mAP(2)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L0(1:3*9, :), 'color', 'g', 'title', Concept );
-% [~,~,~,mAP(3)] = ClassAVGPlot(xTrain, yTrain, xTest, yTest, L, 'color', 'r', 'title', Concept );
-% for i = 1 : 3
-%     subplot(2,2,i);
-%     h = legend('Euclidean', 'PCA', 'algo2'); hold on;
-%     set(h,'box','off')
-% end
 
 cd ../lab/embed;
 
@@ -82,6 +69,6 @@ for modal = 1 : 9
 end
 bar(weight);
 
-save mmLMNN_flare_5k  L Det;
+% save mmLMNN_CH_5k  L Det;
 % csvwrite( ['mmLMNN_' Concept '.txt'], L );
 

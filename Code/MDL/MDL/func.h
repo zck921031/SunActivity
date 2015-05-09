@@ -21,6 +21,8 @@ int classify(vector< vector<double> >xTr , vector<int>yTr,
 double retrieval_test(vector< vector<double> >xTr , vector<int>yTr,
 				  vector< vector<double> >xTe , vector<int>yTe, const vector< vector<double> >&L);
 
+void load_feature_ox5( string path, vector< vector<double> >&xTr , vector<int>&yTr,
+				  vector< vector<double> >&xTe, vector<int>&yTe, double ratio = 0.5 );
 
 double norm(const vector< vector<double> > & g);
 

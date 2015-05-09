@@ -6,11 +6,14 @@
 #include "ctime"
 
 void MDL();
+void MDL_ox5();
 
 int main(){
 	srand( (unsigned)time(NULL) );
 	
-	MDL();
+	//MDL();
+
+	MDL_ox5();
 
 	system("Pause");
 
@@ -23,7 +26,42 @@ int main(){
  * regular: d2(x_i, x_j) s.t. (i,j) \in S
  */
 
+void MDL_ox5(){
+		vector< vector<double> > xTr, xTe;
+	vector<int> yTr, yTe;
+	load_feature_ox5( "C://Users//zck//Documents//GitHub//SunActivity//Code//AnnotationSystem//AnnotationSystem//feature//ox5//",
+		xTr, yTr, xTe, yTe, 0.5);
+	cerr<<xTr.size()<<endl;
+	
 
+	if ( xTr.empty() ) return ;
+	cout<<xTr.size()<<" "<<xTr[0].size()<<" "<<xTe.size()<<" "<<xTe[0].size()<<endl;
+
+	int D = xTr[0].size();
+	retrieval_test(xTr, yTr, xTe, yTe, vector< vector<double> >() );
+
+	cout<<endl;
+
+	
+	sto_pair test;
+	test.xTe = xTe;
+	test.yTe = yTe;
+
+	vector< vector<double> > L = vector< vector<double> >(3, vector<double>(D,0) );
+	for (int i=0; i<(int)L.size(); i++) L[i][i] = 1;
+
+	//L = test.train(xTr, yTr,L );
+	int N = xTr.size();
+	assert(xTr.size() == yTr.size() );
+
+	for (int i=0; i<1000; i++){
+		L = test.train(xTr, yTr, L, 3, 500 );
+		retrieval_test(xTr, yTr, xTe, yTe, L );
+	}
+
+
+
+}
 
 void MDL(){
 	vector< vector<double> > xTr, xTe;

@@ -72,10 +72,12 @@ void LmsalAxis2CvAxis(TP &left, TP &up, TP &right, TP &down, double Size=4096)
 	down =  (int)(-down/0.6 + Size/2);
 }
 
-Mat load_image(string filename){
+Mat load_image(string filename, bool median = true){
 	Mat img = imread( filename.c_str() );
 	Mat gray;
 	cvtColor(img, gray, CV_BGR2GRAY);
-	medianBlur( gray, gray, 7);
+	if ( median ){
+		medianBlur( gray, gray, 7);
+	}
 	return gray;
 }
