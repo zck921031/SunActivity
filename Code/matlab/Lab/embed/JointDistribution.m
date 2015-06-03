@@ -9,18 +9,18 @@ addpath '../func';
 %% Load data 
 
 % {'Sunspot', 'Coronal Hole', 'Flare',  '3'}
-% Concept = '3';
-% [xTrain, yTrain, xTest, yTest] = load_feature( Concept, 1:9, 1:3);
+Concept = 'Flare';
+[xTrain, yTrain, xTest, yTest] = load_feature( Concept, 1:9, 1:3);
+D = 3;
 % yTrain( find(yTrain== -1) ) = 0;
 % yTest ( find(yTest == -1) ) = 0;
 % 
 % addpath 'C:\Users\zck\Desktop\zflower-ljq';
 % [xTrain, yTrain, xTest, yTest] = load_feature_flower();
 
-addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\AnnotationSystem\feature\ox5';
-[xTrain, yTrain, xTest, yTest] =  load_feature_ox5( 1:3 );
-
-D = size(xTrain, 2);
+% addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\AnnotationSystem\feature\ox5';
+% [xTrain, yTrain, xTest, yTest] =  load_feature_ox5( 1:3 );
+% D = size(xTrain, 2);
 
 %wave = 1;
 xTr = xTrain'; yTr = yTrain';
@@ -54,7 +54,7 @@ fprintf('\n')
 disp('Learning initial metric with LMNN ...')
 
 tic
-[L,~] = lmnn2(xTr, yTr,3, L0,'maxiter', 5000, 'quiet', 1,'outdim', D, 'mu', 0.5, 'validation', 0.0, 'earlystopping', 25, 'subsample', 0.3);
+[L,~] = lmnn2(xTr, yTr,3, L0,'maxiter', 50000, 'quiet', 0, 'outdim', D, 'mu', 0.5, 'validation', 0.0, 'earlystopping', 250, 'subsample', 0.3);
 usedtime = toc;
 
 %% KNN classification with 3D LMNN metric
@@ -94,4 +94,4 @@ cd ../lab/embed;
 %     set(h,'box','off')
 % end
 
-save 'LMNN_ox5_2' L usedtime;
+% save 'LMNN_SS' L usedtime;

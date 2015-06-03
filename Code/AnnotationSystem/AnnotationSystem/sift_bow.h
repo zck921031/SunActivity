@@ -11,6 +11,25 @@
 
 namespace __SIFT_BOW{
 
+	void test(){
+		Mat gray;
+		//gray = load_image("C://Users//zck//Documents//GitHub//selfwork//东南大学//毕业设计//毕业设计论文//图表//颜色特征//rgb.jpg");
+		gray = load_image("C://Users//zck//Documents//GitHub//selfwork//东南大学//毕业设计//毕业设计论文//图表//颜色特征//rgb.jpg", false);
+		
+		imshow("1", gray);
+		//sift特征检测
+		SiftFeatureDetector  siftdtc;
+		vector<KeyPoint>kp; 
+		siftdtc.detect(gray, kp);
+		Mat outimg;
+		drawKeypoints(gray, kp, outimg, Scalar::all(0), DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+		cout<<"the number of key point is "<<kp.size()<<endl;
+		imshow("image1 keypoints", outimg);
+		imwrite("C://Users//zck//Documents//GitHub//selfwork//东南大学//毕业设计//毕业设计论文//图表//SIFT特征//sift.jpg", outimg);
+
+		waitKey();
+	}
+
 	int teddytest(){
 		
 		//initModule_nonfree();

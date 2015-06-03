@@ -106,7 +106,7 @@ if(size(x,1)>length(L)) error('x and L must have matching dimensions!\n');end;
  pars.factor=1.1;
  pars.correction=15;
  pars.thresho=1e-7;
- pars.thresha=1e-22;
+ pars.thresha=1e-17;
  pars.ifraction=1;
  pars.scale=1;
  pars.obj=1;
@@ -133,16 +133,14 @@ if(size(x,1)>length(L)) error('x and L must have matching dimensions!\n');end;
  
 pars=extractpars(varargin,pars);
 
-if ( rem(pars.outdim, pars.modal ) ~= 0 ) 
-    error('outdim must be multiple of modal');
-end
 
 if isstruct(pars.pars), pars=pars.pars;end;
 if(~pars.quiet),fprintf('LMNN stable version 2.6.0\n');end;
 if pars.diagonal, pars.obj=2;L=eye(size(L)); end;
 %disp( pars.obj );
 
-L=L(1:pars.outdim,:);
+L = fixL(L, pars);
+
 
 % verification dataset
 %i=randperm(size(x,2));
@@ -339,7 +337,7 @@ for iter=1:pars.maxiter
         break;
        case 1
         if(~pars.quiet)fprintf('Stepsize too small. No more progress!\n');end;
-        break;
+        % break;
         pars.obj=0;
         pars.correction=15;
         stepsize=pars.stepsize;
@@ -402,27 +400,46 @@ function  [impostors,df]=computeGradient(Kg,Lx,x,NN,Ni,df,imp)
 
 function L=step(L,G,stepsize,pars);
 % do step in gradient direction
-if(size(L,1)~=size(L,2)) pars.obj=1;end;
+% if(size(L,1)~=size(L,2)) pars.obj=1;end;
+
 switch(pars.obj)
   case 0    % updating Q
      Q=L'*L;
      Q=Q-stepsize.*G;
+    
+     L = zeros( size(L) );
+     for cc = 1 : length(pars.Lpart)
+        Qt = Q( pars.Lpart(cc, 1):pars.Lpart(cc,2), pars.Lpart(cc, 1):pars.Lpart(cc,2) );         
+        [Lt, dd] = eig(Qt);
+        dd=real(diag(dd));
+        Lt = real(Lt);    
+        j=find(dd<1e-10);
+        dd(j)=0;
+        [~, ii] = sort(-dd);
+        outdim = pars.Lpart(cc, 2) - pars.Lpart(cc, 1) + 1;
+        ii = ii(1:outdim);
+        Lt = Lt(:, ii );
+        dd = dd(ii);
+        Lt = Lt .* repmat( sqrt(dd)', size(Lt,1), 1);
+        L( pars.Lpart(cc,1):pars.Lpart(cc,2), pars.Lpart(cc,3):pars.Lpart(cc,4) ) = Lt';
+     end
      % decompose Q
-     [L,dd]=eig(Q);
-     dd=real(diag(dd));
-     L=real(L);
-     % reassemble Q (ignore negative eigenvalues)
-     j=find(dd<1e-10);
-     if(~isempty(j)) 
-         if(~pars.quiet)fprintf('[%i]',length(j));end;
-     end;
-     dd(j)=0;
-     [temp,ii]=sort(-dd);
-     L=L(:,ii);
-     dd=dd(ii);
-     L=(L*diag(sqrt(dd)))';
-     
-     L = fixL(L, pars);
+%      [L,dd]=eig(Q);
+%      dd=real(diag(dd));
+%      L=real(L);
+%      % reassemble Q (ignore negative eigenvalues)
+%      j=find(dd<1e-10);
+%      if(~isempty(j)) 
+%          if(~pars.quiet)fprintf('[%i]',length(j));end;
+%      end;
+%      dd(j)=0;
+%      [temp,ii]=sort(-dd);
+%      L=L(:,ii);
+%      dd=dd(ii);
+%      L=(L*diag(sqrt(dd)))';
+     % disp( rank(L) );
+     % disp( norm(fixL(L, pars) - L) );
+     % L = fixL(L, pars);
      
    case 1   % updating L
      G=2.*(L*G);
@@ -455,12 +472,13 @@ function [mmL] = fixL(L, pars)
 %  end
 
  mmL  = zeros( size(L) );
- for cc = 1 : length( pars.Lpart )
-     for i = pars.Lpart(cc, 1) : pars.Lpart(cc, 2)
-         for j = pars.Lpart(cc, 1) : pars.Lpart(cc, 2)
-             mmL(i,j) = L(i,j);
-         end
-     end
+ for cc = 1 : size(pars.Lpart,1)
+     mmL( pars.Lpart(cc,1):pars.Lpart(cc,2), pars.Lpart(cc,3):pars.Lpart(cc,4) ) = L( pars.Lpart(cc,1):pars.Lpart(cc,2), pars.Lpart(cc,3):pars.Lpart(cc,4) );
+%      for i = pars.outdim*(cc-1)+1 : pars.outdim*cc
+%          for j = pars.Lpart(cc, 1) : pars.Lpart(cc, 2)
+%              mmL(i,j) = L(i,j);
+%          end
+%      end
  end
 
 

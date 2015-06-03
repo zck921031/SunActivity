@@ -92,9 +92,9 @@ Mat load_image(string filename){
 }
 
 
-pair< vector<KeyPoint>, Mat > genSiftdes(Mat _img, float scale = 0.5){
-	Mat img;
-	resize(_img, img, Size(_img.cols*scale, _img.rows*scale) );
+pair< vector<KeyPoint>, Mat > genSiftdes(Mat img, float scale = 1.0){
+	//Mat img;
+	//resize(_img, img, Size(_img.cols*scale, _img.rows*scale) );
 
 	int rows=img.rows, cols=img.cols;
 	SiftFeatureDetector  siftdtc;
@@ -154,7 +154,7 @@ void genDes(){
 		Mat img = Mat(load_image( pars["imagepath"] + imagefile ) );
 		
 		//img = Mat(img, Rect(1600-256, 1600-256, 300+256, 300+256) );
-		auto res = genSiftdes( img, 0.5 );
+		auto res = genSiftdes( img, 1.0 );
 		vector<KeyPoint>kp = res.first;
 		Mat descriptor = res.second;
 

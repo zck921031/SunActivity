@@ -29,7 +29,7 @@ int main()
 
 	//generate_traindata("anno_nasa.good", 0);
 	
-	calc_train_feature();
+	//calc_train_feature();
 
 	
 	//train(0, 256*1234+16);

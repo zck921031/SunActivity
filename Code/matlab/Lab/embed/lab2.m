@@ -45,7 +45,7 @@ addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\Annotat
 [xTrain, yTrain, xTest, yTest] =  load_feature_ox5( 1:3 );
 xTr = xTrain'; yTr = yTrain';
 xTe = xTest'; yTe = yTest';
-load mmLMNN_ox5_5k;
+load mmLMNN_ox5_3k;
 for tim = 1 : 30
     if ( tim > length( Det.log.L ) )
         err(4, tim) = err(4, tim-1);
@@ -62,17 +62,44 @@ title('每个模态的重要性');
 set(gca,'XTickLabel', {'Sunspot','Coronal Hole','Flare' } );
 legend( {'0094','0131','0171','0193','0211','0304','0335','1600','1700'}, 2 );
 
+% figure(1);
+% bar( weight(1, :) );
+% title('太阳黑子');
+% set(gca,'XTickLabel', {'0094','0131','0171','0193','0211','0304','0335','1600','1700' } );
+% ylabel( '||A||' );
+% 
+% figure(2);
+% bar( weight(2, :) );
+% title('太阳冕洞');
+% set(gca,'XTickLabel', {'0094','0131','0171','0193','0211','0304','0335','1600','1700' } );
+% ylabel( '||A||' );
+% 
+% 
+% figure(3);
+% bar( weight(3, :) );
+% title('太阳耀斑');
+% set(gca,'XTickLabel', {'0094','0131','0171','0193','0211','0304','0335','1600','1700' } );
+% ylabel( '||A||' );
+
 %% show iterator
-figure(2);
-plot( err(1,:), 'r' );  hold on;
-plot( err(2,:), 'b' );  hold on;
-plot( err(3,:), 'g' );  hold on;
-plot( err(4,:), 'y' );  hold on;
-plot( err(1,:), 'r*' );  hold on;
-plot( err(2,:), 'bo' );  hold on;
-plot( err(3,:), 'gx' );  hold on;
-plot( err(4,:), 'y^' );  hold on;
-legend( {'Sunspot', 'Coronal Hole', 'Flare', 'ox5'} );
-title('测试错误率随迭代次数的变化曲线');
-xlabel('迭代次数 x 100次'), ylabel('Test Error');
+acc = 1 - err;
+figure(4);
+%plot( err(1,:), 'r', 'LineWidth',2,'MarkerEdgeColor','r','MarkerFaceColor','g','MarkerSize',10 );  hold on;
+%plot( err(2,:), 'b', 'LineWidth',2,'MarkerEdgeColor','r','MarkerFaceColor','g','MarkerSize',10 );  hold on;
+%plot( err(3,:), 'g', 'LineWidth',2,'MarkerEdgeColor','r','MarkerFaceColor','g','MarkerSize',10 );  hold on;
+%plot( err(4,:), 'y', 'LineWidth',2,'MarkerEdgeColor','r','MarkerFaceColor','g','MarkerSize',10 );  hold on;
+
+% plot( acc(1,:), 'r*-', 'LineWidth', 2, 'MarkerSize', 7 );  hold on;
+% plot( acc(2,:), 'bo-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
+% plot( acc(3,:), 'gs-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
+% plot( acc(4,:), 'y^-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
+
+plot( acc(1,:), 'k*-', 'LineWidth', 1, 'MarkerSize', 4 );  hold on;
+plot( acc(2,:), 'ko-', 'LineWidth', 1, 'MarkerSize', 4  );  hold on;
+plot( acc(3,:), 'ks-', 'LineWidth', 1, 'MarkerSize', 4  );  hold on;
+plot( acc(4,:), 'k^-', 'LineWidth', 1, 'MarkerSize', 5  );  hold on;
+ylim([0.52,1.03]);
+legend( {'太阳黑子', '太阳冕洞', '太阳耀斑', 'Oxford'} );
+% title('测试正确率随迭代次数的变化曲线');
+xlabel('迭代次数 x 100次'), ylabel('测试正确率');
 

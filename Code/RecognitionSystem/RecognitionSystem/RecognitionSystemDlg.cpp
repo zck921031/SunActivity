@@ -323,8 +323,8 @@ void CRecognitionSystemDlg::OnBnClickedButtonOpen()
 	}
 
 
-	cv::namedWindow("1");
-	cv::imshow("1", sceen);
+	cv::namedWindow("太阳活动识别平台");
+	cv::imshow("太阳活动识别平台", sceen);
 
 
 

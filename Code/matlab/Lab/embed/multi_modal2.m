@@ -45,9 +45,9 @@ disp('Learning initial metric with LMNN ...');
 %L0 = eye(D,D);
 
 %part = [ 1, 16; 16+1, 16+200; 16+200+1, 16+200+59 ];
-%[L,~] = lmnn4(xTr, yTr,3,L0,'maxiter', 2000, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.01 );
+[L,~] = lmnn(xTr, yTr,3,L0,'maxiter', 20000, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.05 );
 %[L,~] = lmnn4(xTr, yTr,3,L0,'maxiter', 1500, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.05);
-[L, Det] = lmnn3(xTr, yTr,3,L0,'maxiter', 5000,'quiet', 0,'outdim',27, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.01);
+%[L, Det] = lmnn3(xTr, yTr,3,L0,'maxiter', 50000,'quiet', 0,'outdim',27, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.01);
 %[L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',1000,'quiet',1,'outdim',3,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.05);
 
 %% KNN classification with 3D LMNN metric

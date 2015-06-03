@@ -100,7 +100,7 @@ public:
 	vector<Rect> recognition( vector<Mat> gray ){
 		
 		vector<Rect> ret;
-		
+		int cnt=0;
 		#pragma omp parallel for
 		for (int i=0; i<4096; i+=size )
 		#pragma omp parallel for
@@ -120,7 +120,12 @@ public:
 				ret.push_back( Rect(i, j, size, size) );
 				//cout<<"Find "+Concept+" : "<<Rect(i,j,size, size)<<endl;
 			}
+			cnt++;
 		}
+		CString cs;
+		cs.Format( _T("%d"), cnt);
+		//MessageBox( NULL, cs, _T("Count Windows"), MB_OK );
+
 		return ret;
 	}
 	

@@ -116,6 +116,17 @@ if(~pars.train && pars.test)
  Eval=Eval(2,outputK);
 end;
 
+y = lTe2(outputK, :);
+classes=unique(unique(lTe))';
+P=0;R=0;
+for i=1:length(classes)
+    cl = classes(i);
+    P = P + sum( lTe( find(y==cl ) ) == cl ) / ( sum( y==cl ) + 1e-15 );
+    R = R + sum( y( find(lTe==cl ) ) == cl ) / ( sum( lTe==cl ) + 1e-15 );
+end
+Details.P = P/length(classes);
+Details.R = R/length(classes);
+
 function yy=LSKnn2(Ni,KK,MM)
 % function yy=LSKnn2(Ni,KK,MM);
 %

@@ -46,6 +46,8 @@ int main(){
 	test();
 	cout<<"hello world"<<endl;
 
+	__SIFT_BOW::test();
+	return 0;
 	//AnnotationGui t;
 	//t.start(5);
 	//return 0;

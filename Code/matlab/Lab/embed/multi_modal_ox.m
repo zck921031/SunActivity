@@ -34,8 +34,16 @@ fprintf('\n')
 disp('Learning initial metric with mmLMNN ...');
 L0 = eye(D,D);
 
-part = [ 1, 16; 16+1, 16+200; 16+200+1, 16+200+59 ];
-[L, Det] = lmnn4(xTr, yTr, 3, L0,'maxiter', 5000, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.01 );
+part = [ 1, 16, 1, 16; 16+1, 16+200, 16+1, 16+200; 16+200+1, 16+200+59, 16+200+1, 16+200+59 ];
+tic
+% [L, Det] = lmnn4(xTr, yTr, 3, L0,'maxiter', 10000, 'quiet', 0, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.01 );
+
+[L, Det] = Algorithm2(xTr, yTr, 3, L0,'maxiter', 5000, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.05, 'obj', 0);
+% [L,~] = lmnn2(xTr, yTr,3,L0,'maxiter', 10000, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.05);
+
+
+time = toc;
+disp(time);
 %[L,~] = lmnn4(xTr, yTr,3,L0,'maxiter', 1500, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.05);
 
 

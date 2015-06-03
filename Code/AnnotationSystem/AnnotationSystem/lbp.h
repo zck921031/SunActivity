@@ -58,24 +58,21 @@ namespace __LBP{
 		ISINIT = true;
 	}
 
-	void test(){
-		Mat src = imread("C://Users//zck//Pictures//样例图片//lena.jpg");
-		//Mat src = imread("C://Users//zck//Documents//GitHub//SunActivity//data//regional annotation//img//20110809_075625_4096_0171.jpg");
-		//src = Mat(src, Rect(400,400,4096-800,4096-800) );
-		//resize(src, src, Size(src.cols/4, src.rows/4 ) );
-
+	void test(){		
 		Mat gray;
-		cvtColor(src, gray, CV_BGR2GRAY);
+		gray = load_image("C://Users//zck//Documents//GitHub//selfwork//东南大学//毕业设计//毕业设计论文//图表//颜色特征//rgb.jpg");
 		Mat dst;
 
-		auto a = Lbp59<uchar>(gray, dst, true);
+		auto a = Lbp256<uchar>(gray, dst, true);
 		//auto a = Lbp59<uchar>(gray);
-		for (auto t : a) cout<<t<<" ";cout<<endl;
+		ofstream os("C://Users//zck//Documents//GitHub//selfwork//东南大学//毕业设计//毕业设计论文//图表//LBP特征//hist.txt");
+		for (auto t : a) os<<t<<" ";cout<<endl;
+		os.close();
 		
-		/*imshow("1", src);
+		imshow("1", gray);
 		imshow("2", dst);
-		waitKey();*/
-		//imwrite("lmp_sample.jpg", dst*4);
+		waitKey();
+		imwrite("C://Users//zck//Documents//GitHub//selfwork//东南大学//毕业设计//毕业设计论文//图表//LBP特征//lbp.jpg", dst);
 	}
 }
 
@@ -86,7 +83,7 @@ vector<double> Lbp256(Mat& src, Mat &dst, bool debug) {
 	vector<double> hist(256, 0);
 	if (debug){
 		// allocate memory for result
-		dst = Mat( Size(src.rows-2, src.cols-2), CV_8UC1);
+		dst = Mat( Size(src.cols-2, src.rows-2 ), CV_8UC1);
 		// zero the result matrix
 		dst.setTo(0);
 		cout<<"LBP: debug mode."<<endl;

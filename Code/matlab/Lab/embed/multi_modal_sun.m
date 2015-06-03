@@ -8,7 +8,7 @@ close all
 addpath '../func';
 %% Load data 
 % {'Sunspot', 'Coronal Hole', 'Flare'}
-Concept = 'Coronal Hole';
+Concept = 'Sunspot';
 [xTrain, yTrain, xTest, yTest] = load_feature( Concept, 1:9, 1:3 );
 
 %xTrain = xTrain*256;
@@ -46,10 +46,17 @@ disp('Learning initial metric with mmLMNN ...');
 
 %part = [ 1, 16; 16+1, 16+200; 16+200+1, 16+200+59 ];
 %[L,~] = lmnn4(xTr, yTr,3,L0,'maxiter', 2000, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.01 );
-%[L,~] = lmnn4(xTr, yTr,3,L0,'maxiter', 1500, 'quiet', 0, 'outdim', D, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.05);
-[L, Det] = lmnn3(xTr, yTr,3,L0,'maxiter', 5000,'quiet', 0,'outdim',27, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.01);
-%[L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',1000,'quiet',1,'outdim',3,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.05);
-
+part = [];
+for i = 1:9
+    part = [ part; i*3-2, i*3, i*125 - 124, 125*i; ];
+    %part = [ part; i*16 - 15, 16*i; ];
+end
+tic
+[L,~] = Algorithm2(xTr, yTr,3, L0(1:27, :) ,'maxiter', 1000, 'quiet', 0, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'Lpart', part, 'stepgrowth', 1.05);
+%[L, Det] = lmnn3(xTr, yTr,3,L0,'maxiter', 5000,'quiet', 0,'outdim',27, 'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.01);
+%[L,~] = lmnn2(xTr, yTr,3,L0,'maxiter',1000,'quiet', 0,'outdim',3,'mu',0.5,'validation',0.0,'earlystopping',25,'subsample',0.3, 'modal', 9, 'stepgrowth', 1.05);
+time = toc;
+disp( ['used time : ', num2str(time)] );
 %% KNN classification with 3D LMNN metric
 errL=knncl(L,xTr, yTr,xTe,yTe,1);fprintf('\n');
 
