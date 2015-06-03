@@ -208,9 +208,20 @@ void CRecognitionSystemDlg::myinit()
 	pars["day"] = "0";
 	pars["modal"] = "0";
 
+	
+	char *buf = new char[1<<20];
+	ifstream inpars( "info.ini" );
+	while( inpars.getline(buf, 1<<20) ){
+		if ( *buf == '#' ) continue;
+		auto res = SplitStringByChar(buf, ',');
+		if ( res.size()!=2 ) continue;		
+		string key=res[0], value=res[1];
+		pars[key] = value;
+		//if ( strlen(buf) < 3 ) continue;
+	}
+
 	imageNames.clear();
 	ifstream in( pars["imageNames"] );
-	char *buf = new char[1<<20];
 	while( in.getline(buf, 1<<20) ){
 		if ( *buf == '#' ) continue;
 		if ( strlen(buf) < 3 ) continue;
@@ -240,30 +251,39 @@ void CRecognitionSystemDlg::OnBnClickedButton1()
 
 	stringstream ss;
 	Recognition r("flare", pars, 320, 1800);
-	if ( "true" == pars["CH"] ) r = Recognition("Coronal Hole", pars, 512, 1550);
-	if ( "true" == pars["SS"] ) r = Recognition("Sunspot", pars, 72, 1400);
+	for (int ch=0; ch<3; ch++){
+		if (0==ch)
+			if ( "true" == pars["flare"] ) r = Recognition("flare", pars, 320, 1800);
+			else continue;
 
-	int wave=0, day=3;
-	wave = atoi( pars["modal"].c_str() );
-	day =  atoi( pars["day"].c_str() );
-	cv::Mat img = cv::imread( pars["imagepath"] + "//" + imageNames[day][ wave ] );
-	cv::Mat sceen;
-	cv::resize(img, sceen, Size(512,512) );
+		if (1==ch)
+			if ( "true" == pars["CH"] ) r = Recognition("Coronal Hole", pars, 512, 1550);
+			else continue;
+		
+		if (2==ch)
+			if ( "true" == pars["SS"] ) r = Recognition("Sunspot", pars, 72, 1400);		
+			else continue;
 
-	vector<Rect> res = r.recognition( imageNames[day] );
-	for (  Rect t : res ){
-		rectangle(sceen, Rect(t.x/8, t.y/8, t.width/8, t.height/8 ), Scalar(0,255,255) );
-		result.push_back( make_pair(t, Scalar(0,255,255)) );
+		int wave=0, day=0;
+		wave = atoi( pars["modal"].c_str() );
+		day =  atoi( pars["day"].c_str() );
+		cv::Mat img = cv::imread( pars["imagepath"] + "//" + imageNames[day][ wave ] );
+		cv::Mat sceen;
+		cv::resize(img, sceen, Size(512,512) );
+
+		vector<Rect> res = r.recognition( imageNames[day] );
+		for (  Rect t : res ){
+			rectangle(sceen, Rect(t.x/8, t.y/8, t.width/8, t.height/8 ), Scalar(0,255,255) );
+			result.push_back( make_pair(t, Scalar(0,255,255)) );
+		}
 	}
-
-
-	ss<<imageNames[3][0]<<" fisished~";
+	//ss<<imageNames[3][0]<<" fisished~";
 	
-	CEdit* pBoxOne;
-	pBoxOne = (CEdit*) GetDlgItem(IDC_EDIT2);
-	string sss = ss.str();
-	CString cs = CString( sss.c_str() );
-	pBoxOne->SetWindowText( cs );
+	//CEdit* pBoxOne;
+	//pBoxOne = (CEdit*) GetDlgItem(IDC_EDIT2);
+	//string sss = ss.str();
+	//CString cs = CString( sss.c_str() );
+	//pBoxOne->SetWindowText( cs );
 
 	OnBnClickedButtonOpen();
 	// TODO: 在此添加控件通知处理程序代码
@@ -305,7 +325,7 @@ void CRecognitionSystemDlg::OnBnClickedButton3()
 }
 
 
-
+//点击打开图片
 void CRecognitionSystemDlg::OnBnClickedButtonOpen()
 {
 	// TODO: 在此添加控件通知处理程序代码	
@@ -314,7 +334,9 @@ void CRecognitionSystemDlg::OnBnClickedButtonOpen()
 	int wave=0, day=3;
 	wave = atoi( pars["modal"].c_str() );
 	day =  atoi( pars["day"].c_str() );
+	if ( day>=(int)imageNames.size() ) return ;
 	cv::Mat img = cv::imread( pars["imagepath"] + "//" + imageNames[day][ wave ] );
+	if ( img.empty() ) return ;
 	cv::Mat sceen;
 	cv::resize(img, sceen, Size(512,512) );
 
