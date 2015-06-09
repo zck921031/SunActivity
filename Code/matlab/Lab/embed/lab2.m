@@ -89,15 +89,16 @@ figure(4);
 %plot( err(3,:), 'g', 'LineWidth',2,'MarkerEdgeColor','r','MarkerFaceColor','g','MarkerSize',10 );  hold on;
 %plot( err(4,:), 'y', 'LineWidth',2,'MarkerEdgeColor','r','MarkerFaceColor','g','MarkerSize',10 );  hold on;
 
-% plot( acc(1,:), 'r*-', 'LineWidth', 2, 'MarkerSize', 7 );  hold on;
-% plot( acc(2,:), 'bo-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
-% plot( acc(3,:), 'gs-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
-% plot( acc(4,:), 'y^-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
+plot( acc(1,:), 'r*-', 'LineWidth', 2, 'MarkerSize', 7 );  hold on;
+plot( acc(2,:), 'bo-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
+plot( acc(3,:), 'gs-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
+plot( acc(4,:), 'y^-', 'LineWidth', 2, 'MarkerSize', 7  );  hold on;
 
-plot( acc(1,:), 'k*-', 'LineWidth', 1, 'MarkerSize', 4 );  hold on;
-plot( acc(2,:), 'ko-', 'LineWidth', 1, 'MarkerSize', 4  );  hold on;
-plot( acc(3,:), 'ks-', 'LineWidth', 1, 'MarkerSize', 4  );  hold on;
-plot( acc(4,:), 'k^-', 'LineWidth', 1, 'MarkerSize', 5  );  hold on;
+% plot( acc(1,:), 'k*-', 'LineWidth', 1, 'MarkerSize', 4 );  hold on;
+% plot( acc(2,:), 'ko-', 'LineWidth', 1, 'MarkerSize', 4  );  hold on;
+% plot( acc(3,:), 'ks-', 'LineWidth', 1, 'MarkerSize', 4  );  hold on;
+% plot( acc(4,:), 'k^-', 'LineWidth', 1, 'MarkerSize', 5  );  hold on;
+
 ylim([0.52,1.03]);
 legend( {'太阳黑子', '太阳冕洞', '太阳耀斑', 'Oxford'} );
 % title('测试正确率随迭代次数的变化曲线');

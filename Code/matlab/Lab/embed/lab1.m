@@ -133,11 +133,13 @@ test_result = [ test_result, err_svm(:,2) ];
 test_result = [ test_result, err_OASIS(:,2) ];
 test_result = [ test_result, err_LMNN(:,2) ];
 test_result = [ test_result, err_me(:,2) ];
-bar(test_result);
-title( '分类错误率');
+bar(1-test_result);
+title( '分类正确率');
 set(gca,'XTickLabel', {'Sunspot','Coronal Hole','Flare' } ) %设置x轴所代表大时间
-ylabel('Test Error')  %设置x轴和y轴的名称
+ylabel('测试正确率')  %设置x轴和y轴的名称
 legend('Euclidean', 'PCA', 'NCA', 'LDA', 'DCA', 'SVM', 'OASIS', 'LMNN', 'Our method');
+
+set(gca,'ylim',[0.75 1.05]);
 
 acc = 1 - test_result;
 

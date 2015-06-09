@@ -3,6 +3,7 @@ clear;
 close all;
 clc;
 
+Kg = 11;
 
 addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\lmnn\helperfunctions';
 addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\matlab\lmnn';
@@ -16,7 +17,6 @@ addpath 'C:\Users\zck\Documents\GitHub\SunActivity\Code\AnnotationSystem\Annotat
 xTr = xTrain'; yTr = yTrain';
 xTe = xTest'; yTe = yTest';
 
-Kg = 11;
 %% Euclidean
 tic;
 [err_Euclidean, det] = knncl([], xTr, yTr,xTe,yTe, Kg);
@@ -72,8 +72,10 @@ apr_LMNN = [1-err_LMNN(2), det.P, det.R, time];
 Struct = svmtrainovr(xTrain, yTrain);
 C = svmclassifyovr(Struct, xTrain);
 err_svmOvR(1) = 1 - sum( C == yTrain ) / length(yTrain);
+tic;
 C = svmclassifyovr(Struct, xTest);
 err_svmOvR(2) = 1 - sum( C == yTest ) / length(yTest);
+svmtime = toc;
 
 %% Me
 load mmLMNN_ox5_3k;
@@ -100,6 +102,29 @@ test_result = [ test_result, err_LMNN(2) ];
 test_result = [ test_result, err_me(2) ];
 test_result = [ test_result, err_svmOvR(2) ];
 
+%% show acc
+%subplot(2,1,1);
+b = test_result;
+hold on;
+for i=1:length( test_result )
+b(i) = bar(i, 1-test_result(i) );
+ch = get( b(i) , 'children' );
+set(ch, 'FaceVertexCData', i );
+end
+title( ['ox5数据集 测试正确率 K=', num2str(Kg)]);
+%set(gca,'XTickLabel', { ' ','Euclidean', ' ','DCA', ' ','SVMOvR', ' ','OASIS'  } );
+
+set(gca,'XTickLabel', { ' ','Euclidean', 'NCA', 'DCA', 'OASIS', 'LMNN', 'Our method', 'SVMOvR'} );
+
+ylabel('测试正确率');  %设置x轴和y轴的名称
+legend('Euclidean', 'NCA', 'DCA', 'OASIS', 'LMNN', 'Our method', 'SVMOvR');
+
+apr = [apr_Euclidean; apr_NCA; arp_DCA; apr_OASIS;  apr_LMNN; apr_me];
+
+%% show time
+figure(2);
+%subplot(2,1,2);
+test_result = [apr(:,4); svmtime];
 b = test_result;
 hold on;
 for i=1:length( test_result )
@@ -107,14 +132,7 @@ b(i) = bar(i, test_result(i) );
 ch = get( b(i) , 'children' );
 set(ch, 'FaceVertexCData', i );
 end
-
-
-title( 'ox5数据集 测试错误率');
-%set(gca,'XTickLabel', { ' ','Euclidean', ' ','DCA', ' ','SVMOvR', ' ','OASIS'  } );
-
+title( ['ox5数据集 测试时间 K=', num2str(Kg)]);
 set(gca,'XTickLabel', { ' ','Euclidean', 'NCA', 'DCA', 'OASIS', 'LMNN', 'Our method', 'SVMOvR'} );
-
-ylabel('Test Error');  %设置x轴和y轴的名称
+ylabel('测试时间(s)');  %设置x轴和y轴的名称
 legend('Euclidean', 'NCA', 'DCA', 'OASIS', 'LMNN', 'Our method', 'SVMOvR');
-
-apr = [apr_Euclidean; apr_NCA; arp_DCA; apr_OASIS;  apr_LMNN; apr_me];
